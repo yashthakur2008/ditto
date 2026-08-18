@@ -38,3 +38,14 @@ async def list_collection(collection: str, limit: int = 20) -> list[dict[str, An
     db = get_db()
     docs = db.collection(collection).limit(limit).stream()
     return [doc.to_dict() async for doc in docs]
+
+
+async def query_by_field(
+    collection: str, field: str, value: Any, order_by: str | None = None, limit: int = 20
+) -> list[dict[str, Any]]:
+    db = get_db()
+    query = db.collection(collection).where(field, "==", value)
+    if order_by:
+        query = query.order_by(order_by, direction=firestore.Query.DESCENDING)
+    docs = query.limit(limit).stream()
+    return [doc.to_dict() async for doc in docs]

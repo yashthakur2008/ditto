@@ -1,0 +1,54 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+#
+# Deploy: Dashboard → New → Blueprint → connect this repo.
+# On first deploy, Render will prompt for GEMINI_API_KEY (required).
+#
+# After deploy, open the frontend URL — CORS and NEXT_PUBLIC_BACKEND_URL
+# are wired automatically via service references below.
+
+services:
+  # ── Backend (FastAPI + Playwright) ─────────────────────────────────────────
+  - type: web
+    name: ditto-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: APP_ENV
+        value: production
+      - key: CORS_ORIGINS
+        fromService:
+          type: web
+          name: ditto-web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: ELEVENLABS_VOICE
+        value: 21m00Tcm4TlvDq8ikWAM
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
+
+  # ── Frontend (Next.js) ─────────────────────────────────────────────────────
+  - type: web
+    name: ditto-web
+    runtime: node
+    rootDir: frontend
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NEXT_PUBLIC_BACKEND_URL
+        fromService:
+          type: web
+          name: ditto-api
+          envVarKey: RENDER_EXTERNAL_URL

@@ -1,0 +1,29 @@
+# Git & IDE
+.git
+.github
+.vscode
+.idea
+
+# Python
+.venv
+venv
+__pycache__
+*.pyc
+.pytest_cache
+htmlcov
+.coverage
+
+# Node (frontend is not used in the API image)
+frontend/node_modules
+frontend/.next
+
+# Secrets & local env
+.env
+.env.*
+!.env.example
+service-account*.json
+firebase-adminsdk*.json
+
+# Docs & misc
+*.md
+!README.md

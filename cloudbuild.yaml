@@ -21,7 +21,7 @@ steps:
       - "--region=us-central1"
       - "--platform=managed"
       - "--allow-unauthenticated"
-      - "--set-env-vars=FIREBASE_PROJECT_ID=$PROJECT_ID"
+      - "--set-env-vars=FIREBASE_PROJECT_ID=$PROJECT_ID,APP_ENV=production,GEMINI_MODEL=gemini-2.5-flash,CORS_ORIGINS=http://localhost:3000"
 
 images:
   - "gcr.io/$PROJECT_ID/$REPO_NAME:$COMMIT_SHA"

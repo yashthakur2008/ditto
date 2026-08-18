@@ -19,8 +19,12 @@ env/
 .env
 *.json
 !package.json
+!extension/*.json
 service-account*.json
 firebase-adminsdk*.json
+
+# Claude Code local tool state (worktrees, etc.)
+.claude/
 
 # IDE
 .vscode/
@@ -33,4 +37,5 @@ Thumbs.db
 
 # Cloud Build / GCP artifacts
 .gcloud/
-backend/gcloud init/
+backend/
+

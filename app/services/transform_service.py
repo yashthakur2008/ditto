@@ -1,8 +1,8 @@
 """
 Two-step pipeline:
-  Step 1 — ActionLayer scrapes the live page (handles JS-rendered SPAs).
-            Falls back to httpx + BeautifulSoup for simple pages or when
-            ActionLayer is unavailable.
+  Step 1 — a local headless browser (Playwright) scrapes the live page
+            (handles JS-rendered SPAs). Falls back to httpx + BeautifulSoup
+            for simple pages or when the browser render fails.
   Step 2 — Gemini classifies content safety, then transforms the HTML into
             an accessible rebuild tailored to the user's disability profile.
 
@@ -12,14 +12,19 @@ Minor protection is tiered:
   hardcore → block entire content sections, show a safe placeholder,
              but still render the rest of the page so the user isn't locked out
 """
+import hashlib
 import json
 import re
 import ssl
+import time
+from collections import OrderedDict
+
 import httpx
 from bs4 import BeautifulSoup, Comment
 
-from app.services import gemini_service, actionlayer_service, score_service
+from app.services import gemini_service, browser_service, score_service
 from app.models.schemas import TransformProfile
+from app.services.url_validation import validate_fetch_url
 
 _HEADERS = {
     "User-Agent": (
@@ -44,13 +49,9 @@ def _lenient_ssl() -> ssl.SSLContext:
     return ctx
 
 
-async def _fetch_via_beautifulsoup(url: str) -> str:
-    """Fallback scraper for simple, server-rendered pages."""
-    async with httpx.AsyncClient(verify=_lenient_ssl(), follow_redirects=True, timeout=15) as client:
-        r = await client.get(url, headers=_HEADERS)
-        r.raise_for_status()
-
-    soup = BeautifulSoup(r.text, "html.parser")
+def _clean_html(raw_html: str) -> str:
+    """Strip scripts/nav/ads/hidden noise and return the main content region."""
+    soup = BeautifulSoup(raw_html, "html.parser")
 
     for tag in soup(["script", "style", "noscript", "iframe",
                      "svg", "video", "audio", "canvas", "meta", "link"]):
@@ -69,27 +70,41 @@ async def _fetch_via_beautifulsoup(url: str) -> str:
         if _SCRUB_CLASSES.search(classes):
             tag.decompose()
 
-    main = (
-        soup.find("main")
-        or soup.find("article")
-        or soup.find(id="content")
-        or soup.find(id="main")
-        or soup.find("body")
-        or soup
-    )
+    candidates = [
+        tag for tag in (
+            soup.find("main"),
+            soup.find("article"),
+            soup.find(id="content"),
+            soup.find(id="main"),
+            soup.find("body"),
+        )
+        if tag is not None
+    ]
+    main = max(candidates, key=lambda t: len(t.get_text(strip=True)), default=soup)
     return str(main)[:40_000]
+
+
+async def _fetch_via_beautifulsoup(url: str) -> str:
+    """Fallback scraper for simple, server-rendered pages."""
+    async with httpx.AsyncClient(verify=_lenient_ssl(), follow_redirects=True, timeout=15) as client:
+        r = await client.get(url, headers=_HEADERS)
+        r.raise_for_status()
+
+    return _clean_html(r.text)
 
 
 async def scrape(url: str) -> str:
     """
-    Step 1 — try ActionLayer first (handles JS, React, Next.js pages).
+    Step 1 — try a local headless-browser render first (handles JS, React, Next.js pages).
     Falls back to BeautifulSoup for simple HTML.
     """
-    al_content = await actionlayer_service.scrape(url)
-    if al_content and len(al_content) > 200:
-        return al_content[:40_000]
+    safe_url = validate_fetch_url(url)
 
-    return await _fetch_via_beautifulsoup(url)
+    rendered = await browser_service.scrape(safe_url)
+    if rendered and len(rendered) > 200:
+        return _clean_html(rendered)
+
+    return await _fetch_via_beautifulsoup(safe_url)
 
 
 # ── Content classification ─────────────────────────────────────────────────────
@@ -167,16 +182,18 @@ def _build_transform_prompt(
         "          padding: 20px; line-height: 1.8; }",
         "",
         "DISABILITY-SPECIFIC RULES:",
-        "• dyslexia  → font-family: OpenDyslexic, Arial; letter-spacing: 0.1em;",
-        "              max 2 sentences per paragraph; left-align; background: #fffdf0.",
-        "• blind     → detailed alt text on ALL images (describe what is shown);",
-        "              skip-to-main-content link at very top; logical tab order;",
-        "              ARIA landmarks (banner, main, navigation, contentinfo).",
-        "• elderly   → minimum font-size 20px; touch targets ≥ 48 × 48 px;",
-        "              high contrast (black on white); bold labels; simple vocabulary.",
-        "• deaf      → mark every audio/video element with [AUDIO CONTENT];",
-        "              provide a full text description of what it contains.",
-        "• none      → clean up clutter, ensure comfortable readability.",
+        "• dyslexia    → OpenDyslexic font; letter-spacing 0.1em; max 2 sentences per paragraph;",
+        "                left-align; background #fffdf0.",
+        "• blind       → detailed alt text on ALL images; skip-to-main link; ARIA landmarks.",
+        "• low_vision  → font-size min 22px; black on white; high contrast; underlined links;",
+        "                large touch targets; detailed image descriptions.",
+        "• adhd        → bullet points and short paragraphs; bold first words; remove sidebars;",
+        "                clear section dividers; font-size 17px.",
+        "• tremor      → all click targets min 64×64px; generous spacing; large form fields;",
+        "                no hover-only interactions; sticky large nav.",
+        "• elderly     → font-size min 20px; high contrast; simple vocabulary; large buttons.",
+        "• deaf        → mark audio/video; provide transcripts and visual descriptions.",
+        "• none        → clean clutter, ensure comfortable readability.",
         "",
         "MINOR CONTENT RULES (apply only when minor = True):",
     ]
@@ -226,18 +243,64 @@ def _build_transform_prompt(
     return "\n".join(lines)
 
 
+# ── Result cache ───────────────────────────────────────────────────────────────
+# Repeat visitors (or a batch re-run) hit the same URL+profile combination
+# often; scraping + Gemini generation is by far the most expensive part of
+# this pipeline, so cache the full result in memory for a short TTL. This is
+# per-process — fine for a single Cloud Run/Render instance, and simply
+# reduces hit rate (not correctness) if there are multiple instances.
+
+_CACHE_TTL_SECONDS = 15 * 60
+_CACHE_MAX_ENTRIES = 200
+_cache: "OrderedDict[str, tuple[float, tuple[str, str, dict, dict, str]]]" = OrderedDict()
+
+
+def _cache_key(url: str, profile: TransformProfile, compliance_note: str | None) -> str:
+    payload = json.dumps(
+        {"url": url, "profile": profile.model_dump(), "compliance_note": compliance_note},
+        sort_keys=True,
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _cache_get(key: str) -> tuple[str, str, dict, dict, str] | None:
+    entry = _cache.get(key)
+    if not entry:
+        return None
+    expires_at, value = entry
+    if time.time() > expires_at:
+        _cache.pop(key, None)
+        return None
+    _cache.move_to_end(key)
+    return value
+
+
+def _cache_set(key: str, value: tuple[str, str, dict, dict, str]) -> None:
+    _cache[key] = (time.time() + _CACHE_TTL_SECONDS, value)
+    _cache.move_to_end(key)
+    while len(_cache) > _CACHE_MAX_ENTRIES:
+        _cache.popitem(last=False)
+
+
 # ── Public API ─────────────────────────────────────────────────────────────────
 
 async def transform(
     url: str,
     profile: TransformProfile,
     compliance_note: str | None = None,
-) -> tuple[str, str, dict, dict]:
+) -> tuple[str, str, dict, dict, str]:
     """
-    Returns (transformed_html, content_level, before_score, after_score).
-    Scores are dicts from score_service.score().
+    Returns (transformed_html, content_level, before_score, after_score, original_html).
+    Scores are dicts from score_service.score(). original_html is the cleaned
+    (script/ad-stripped) source content, for side-by-side comparison.
+    Results are cached in-memory for _CACHE_TTL_SECONDS per (url, profile).
     """
     import asyncio
+
+    key = _cache_key(url, profile, compliance_note)
+    cached = _cache_get(key)
+    if cached is not None:
+        return cached
 
     # Step 1 — ActionLayer scrapes the live page
     html = await scrape(url)
@@ -262,4 +325,6 @@ async def transform(
     # Step 3 — score the rebuilt page
     after_score = await score_service.score(result)
 
-    return result, content_level, before_score, after_score
+    value = (result, content_level, before_score, after_score, html)
+    _cache_set(key, value)
+    return value
