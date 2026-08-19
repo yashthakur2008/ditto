@@ -36,21 +36,27 @@ async def create_share(req: ShareRequest) -> ShareResponse:
         raise HTTPException(status_code=413, detail="This rebuilt page is too large to share.")
 
     share_id = uuid.uuid4().hex[:10]
-    await firebase_service.set_document(
-        "shares",
-        share_id,
-        {
-            "transformed_html": req.transformed_html,
-            "original_url": req.original_url,
-            "created_at": time.time(),
-        },
-    )
+    try:
+        await firebase_service.set_document(
+            "shares",
+            share_id,
+            {
+                "transformed_html": req.transformed_html,
+                "original_url": req.original_url,
+                "created_at": time.time(),
+            },
+        )
+    except Exception:
+        raise HTTPException(status_code=503, detail="Couldn't create a share link right now — try again shortly.")
     return ShareResponse(id=share_id)
 
 
 @router.get("/share/{share_id}", response_model=ShareRecord)
 async def get_share(share_id: str) -> ShareRecord:
-    doc = await firebase_service.get_document("shares", share_id)
+    try:
+        doc = await firebase_service.get_document("shares", share_id)
+    except Exception:
+        raise HTTPException(status_code=503, detail="Couldn't load this shared page right now — try again shortly.")
     if not doc:
         raise HTTPException(status_code=404, detail="This shared page doesn't exist or has expired.")
     return ShareRecord(**doc)

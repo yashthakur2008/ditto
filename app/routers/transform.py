@@ -213,13 +213,19 @@ async def score_url(req: ScoreRequest) -> dict:
 
 @router.post("/save-profile")
 async def save_profile(req: SaveProfileRequest) -> dict:
-    await firebase_service.set_document("users", req.uid, req.profile)
+    try:
+        await firebase_service.set_document("users", req.uid, req.profile)
+    except Exception:
+        raise HTTPException(status_code=503, detail="Couldn't save your profile right now — try again shortly.")
     return {"status": "saved"}
 
 
 @router.get("/get-profile/{uid}")
 async def get_profile(uid: str) -> dict:
-    doc = await firebase_service.get_document("users", uid)
+    try:
+        doc = await firebase_service.get_document("users", uid)
+    except Exception:
+        raise HTTPException(status_code=503, detail="Couldn't load your profile right now — try again shortly.")
     return doc or {}
 
 
