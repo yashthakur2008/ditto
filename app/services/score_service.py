@@ -1,9 +1,10 @@
 """
 Accessibility scoring via Gemini.
 Scores an HTML page 0-100 across five WCAG-aligned axes.
-Fast — uses only the first 10 000 chars to keep latency low.
+Fast and cheap — uses the light model and only the first 6 000 chars.
 """
 import json
+from app.config import settings
 from app.services import gemini_service
 
 _PROMPT = """You are a WCAG 2.1 accessibility auditor.
@@ -33,9 +34,11 @@ HTML to audit:
 
 
 async def score(html: str) -> dict:
-    snippet = html[:10_000]
+    # Scoring is a small structured-output task — the light model is plenty
+    # accurate here and is meaningfully cheaper per call than the main model.
+    snippet = html[:6_000]
     try:
-        raw = await gemini_service.generate(_PROMPT + snippet)
+        raw = await gemini_service.generate(_PROMPT + snippet, model=settings.gemini_light_model)
         raw = raw.strip()
         if raw.startswith("```"):
             raw = raw.split("\n", 1)[1].rsplit("```", 1)[0]

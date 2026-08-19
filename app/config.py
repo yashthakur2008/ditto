@@ -7,6 +7,10 @@ class Settings(BaseSettings):
 
     gemini_api_key: str = ""
     gemini_model: str = "gemini-2.5-flash"
+    # Cheaper/faster model for small structured tasks (scoring, content
+    # classification) that don't need the full model's quality — cuts token
+    # cost on the two extra Gemini calls every /transform makes today.
+    gemini_light_model: str = "gemini-2.5-flash-lite"
 
     google_maps_api_key: str = ""
 

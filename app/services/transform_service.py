@@ -22,6 +22,7 @@ from collections import OrderedDict
 import httpx
 from bs4 import BeautifulSoup, Comment
 
+from app.config import settings
 from app.services import gemini_service, browser_service, score_service
 from app.models.schemas import TransformProfile
 from app.services.url_validation import validate_fetch_url
@@ -81,7 +82,10 @@ def _clean_html(raw_html: str) -> str:
         if tag is not None
     ]
     main = max(candidates, key=lambda t: len(t.get_text(strip=True)), default=soup)
-    return str(main)[:40_000]
+    # Gemini is billed by tokens in both directions — the rebuild prompt echoes
+    # this content back in full, so trimming it directly cuts cost. 20k chars
+    # (~5k tokens) comfortably covers a full article/page body.
+    return str(main)[:20_000]
 
 
 async def _fetch_via_beautifulsoup(url: str) -> str:
@@ -127,11 +131,11 @@ async def classify_content(html: str) -> tuple[str, str]:
     """
     Returns (level, reason).
     level is 'safe', 'mild', or 'hardcore'.
-    Fast — uses only the first 8 000 chars to keep latency low.
+    Fast and cheap — light model, only the first 8 000 chars.
     """
     snippet = html[:8_000]
     try:
-        raw = await gemini_service.generate(_CLASSIFY_PROMPT + snippet)
+        raw = await gemini_service.generate(_CLASSIFY_PROMPT + snippet, model=settings.gemini_light_model)
         raw = raw.strip()
         if raw.startswith("```"):
             raw = raw.split("\n", 1)[1].rsplit("```", 1)[0]
@@ -243,12 +247,51 @@ def _build_transform_prompt(
     return "\n".join(lines)
 
 
-# ── Result cache ───────────────────────────────────────────────────────────────
+# ── Scrape cache (per URL, profile-independent) ─────────────────────────────────
+# Scraping (a headless-browser render) and scoring the ORIGINAL page cost the
+# same regardless of which profile the page is being rebuilt for. Caching
+# this step separately from the full result means re-rebuilding the same URL
+# for a different profile — e.g. a user tweaking their preferences and
+# re-running the same link — skips the browser render and one Gemini call
+# entirely, instead of only benefiting on an exact (url, profile) repeat.
+
+_SCRAPE_CACHE_TTL_SECONDS = 10 * 60
+_SCRAPE_CACHE_MAX_ENTRIES = 200
+_scrape_cache: "OrderedDict[str, tuple[float, dict]]" = OrderedDict()
+
+
+async def _get_scraped(url: str) -> dict:
+    """
+    Returns a shared, mutable record for this URL:
+    {"html", "before_score", "content_level" (None until a minor's profile
+    first needs it), "content_reason"}.
+    """
+    now = time.time()
+    cached = _scrape_cache.get(url)
+    if cached is not None:
+        expires_at, record = cached
+        if now <= expires_at:
+            _scrape_cache.move_to_end(url)
+            return record
+        _scrape_cache.pop(url, None)
+
+    html = await scrape(url)
+    before_score = await score_service.score(html)
+    record = {"html": html, "before_score": before_score, "content_level": None, "content_reason": ""}
+
+    _scrape_cache[url] = (now + _SCRAPE_CACHE_TTL_SECONDS, record)
+    _scrape_cache.move_to_end(url)
+    while len(_scrape_cache) > _SCRAPE_CACHE_MAX_ENTRIES:
+        _scrape_cache.popitem(last=False)
+    return record
+
+
+# ── Result cache (per URL + profile) ────────────────────────────────────────────
 # Repeat visitors (or a batch re-run) hit the same URL+profile combination
-# often; scraping + Gemini generation is by far the most expensive part of
-# this pipeline, so cache the full result in memory for a short TTL. This is
-# per-process — fine for a single Cloud Run/Render instance, and simply
-# reduces hit rate (not correctness) if there are multiple instances.
+# often; caching the full result in memory for a short TTL skips the
+# pipeline entirely on an exact repeat. Per-process — fine for a single
+# Cloud Run/Render instance, and simply reduces hit rate (not correctness)
+# if there are multiple instances.
 
 _CACHE_TTL_SECONDS = 15 * 60
 _CACHE_MAX_ENTRIES = 200
@@ -293,27 +336,28 @@ async def transform(
     Returns (transformed_html, content_level, before_score, after_score, original_html).
     Scores are dicts from score_service.score(). original_html is the cleaned
     (script/ad-stripped) source content, for side-by-side comparison.
-    Results are cached in-memory for _CACHE_TTL_SECONDS per (url, profile).
+    Results are cached in-memory for _CACHE_TTL_SECONDS per (url, profile);
+    the scrape + original-page score are cached separately per URL so a
+    different profile on the same URL skips those steps too.
     """
-    import asyncio
-
     key = _cache_key(url, profile, compliance_note)
     cached = _cache_get(key)
     if cached is not None:
         return cached
 
-    # Step 1 — ActionLayer scrapes the live page
-    html = await scrape(url)
+    # Step 1 — scrape (or reuse) the live page, and score the original
+    record = await _get_scraped(url)
+    html = record["html"]
+    before_score = record["before_score"]
 
-    async def _noop_classify():
-        return ("safe", "")
-
-    # Step 2a — classify content + score original page in parallel
-    classify_coro = classify_content(html) if profile.age < 18 else _noop_classify()
-    (content_level, _), before_score = await asyncio.gather(
-        classify_coro,
-        score_service.score(html),
-    )
+    # Step 2a — classify content only when a minor's profile first needs it;
+    # the result is cached on the URL record for future minor requests too.
+    if profile.age < 18:
+        if record["content_level"] is None:
+            record["content_level"], record["content_reason"] = await classify_content(html)
+        content_level = record["content_level"]
+    else:
+        content_level = "safe"
 
     # Step 2b — Gemini transforms the page
     prompt = _build_transform_prompt(html, profile, content_level, compliance_note)

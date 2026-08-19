@@ -62,6 +62,13 @@ flowchart LR
 2. **Chat** — Paste any URL or ask Ditto questions. URLs trigger a full rebuild.
 3. **Output** — View the rebuilt page with before/after accessibility scores.
 
+**Cost/latency notes:** scraping and scoring the *original* page is cached
+per URL (10 min) independent of profile, so rebuilding the same link for a
+different profile skips the browser render and one Gemini call. Full
+results are cached per (URL, profile) for 15 min. Scoring and content
+classification run on `GEMINI_LIGHT_MODEL` (a cheaper model) — only the
+page rebuild itself uses the full `GEMINI_MODEL`.
+
 ## API endpoints
 
 | Method | Path | Description |
@@ -102,6 +109,7 @@ See [`.env.example`](.env.example) (backend) and [`frontend/.env.example`](front
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `GEMINI_API_KEY` | Yes | Gemini API for transform, chat, scoring |
+| `GEMINI_LIGHT_MODEL` | No | Cheaper model for scoring/classification (default `gemini-2.5-flash-lite`) |
 | `ELEVENLABS_API_KEY` | No | Text-to-speech (`/voice/tts`) |
 | `FIREBASE_PROJECT_ID` | No | Analytics + profile storage |
 | `GOOGLE_MAPS_API_KEY` | No | Maps endpoints only |
