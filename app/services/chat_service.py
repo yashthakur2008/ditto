@@ -1,5 +1,5 @@
-"""Gemini-powered conversational replies for the Ditto chat UI."""
-from app.services import gemini_service
+"""OpenAI-powered conversational replies for the Ditto chat UI."""
+from app.services import openai_service
 
 _CHAT_SYSTEM = """You are Ditto, a warm and clever AI accessibility companion built to help people
 access the web on their own terms. You rebuild websites to match each person's unique needs —
@@ -37,7 +37,7 @@ async def chat(messages: list[dict], preferences: dict) -> str:
         convo += f"{role}: {m.get('text', '')}\n"
     convo += "Ditto:"
 
-    return await gemini_service.generate(
+    return await openai_service.generate(
         convo,
         generation_config={"max_output_tokens": 200, "temperature": 0.7},
     )

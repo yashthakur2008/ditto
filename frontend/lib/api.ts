@@ -108,7 +108,7 @@ export function preferencesToChatContext(
   };
 }
 
-/** Send conversation to Gemini via /chat, returns Ditto's reply. */
+/** Send conversation to OpenAI via /chat, returns Ditto's reply. */
 export async function dittoChat(
   messages: { role: string; text: string }[],
   preferences: Record<string, unknown> | null,

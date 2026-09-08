@@ -22,7 +22,7 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
 cp .env.example .env
-# Add GEMINI_API_KEY (required for transform + chat)
+# Add OPENAI_API_KEY and CLAUDE_API_KEY (required for transform + agent actions)
 
 uvicorn app.main:app --reload --port 8080
 ```
@@ -53,8 +53,8 @@ flowchart LR
   Chat --> Transform["POST /transform"]
   Transform --> Scrape["Scrape page"]
   Scrape --> Classify["Classify content"]
-  Classify --> Gemini["Gemini rebuild"]
-  Gemini --> Score["Score before/after"]
+  Classify --> OpenAI["OpenAI rebuild"]
+  OpenAI --> Score["Score before/after"]
   Score --> Output["Sandboxed preview"]
 ```
 
@@ -64,10 +64,10 @@ flowchart LR
 
 **Cost/latency notes:** scraping and scoring the *original* page is cached
 per URL (10 min) independent of profile, so rebuilding the same link for a
-different profile skips the browser render and one Gemini call. Full
+different profile skips the browser render and one LLM call. Full
 results are cached per (URL, profile) for 15 min. Scoring and content
-classification run on `GEMINI_LIGHT_MODEL` (a cheaper model) — only the
-page rebuild itself uses the full `GEMINI_MODEL`.
+classification run on `OPENAI_LIGHT_MODEL` (a cheaper model) — only the
+page rebuild itself uses the full `OPENAI_MODEL`.
 
 ## API endpoints
 
@@ -76,7 +76,7 @@ page rebuild itself uses the full `GEMINI_MODEL`.
 | GET | `/health` | Liveness + config flags |
 | POST | `/transform` | Scrape URL → rebuild HTML for user profile |
 | POST | `/transform/batch` | Rebuild up to 10 URLs at once with one profile |
-| POST | `/chat` | Conversational Ditto replies (Gemini) |
+| POST | `/chat` | Conversational Ditto replies (OpenAI) |
 | POST | `/voice/tts` | ElevenLabs text-to-speech (MP3) |
 | POST | `/classify` | Pre-flight content safety for minors |
 | POST | `/score` | Accessibility score without transforming |
@@ -95,7 +95,7 @@ extension/         Manifest V3 browser extension — rebuild the active tab in o
 app/
   main.py          FastAPI entry point
   routers/         HTTP routes (transform, chat, voice, health, …)
-  services/        Gemini, scraping, scoring, TTS, compliance
+  services/        OpenAI, Claude, scraping, scoring, TTS, compliance
   models/          Pydantic request/response schemas
 deploy.sh          Deploy backend to Cloud Run
 cloudbuild.yaml    CI/CD for Cloud Run
@@ -108,15 +108,16 @@ See [`.env.example`](.env.example) (backend) and [`frontend/.env.example`](front
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `GEMINI_API_KEY` | Yes | Gemini API for transform, chat, scoring |
-| `GEMINI_LIGHT_MODEL` | No | Cheaper model for scoring/classification (default `gemini-2.5-flash-lite`) |
+| `OPENAI_API_KEY` | Yes | OpenAI API for transform, chat, scoring |
+| `CLAUDE_API_KEY` | Yes | Claude API for agent actions |
+| `OPENAI_LIGHT_MODEL` | No | Cheaper model for scoring/classification (default `gpt-4o-mini`) |
 | `ELEVENLABS_API_KEY` | No | Text-to-speech (`/voice/tts`) |
 | `FIREBASE_PROJECT_ID` | No | Analytics + profile storage |
 | `GOOGLE_MAPS_API_KEY` | No | Maps endpoints only |
 | `CORS_ORIGINS` | Yes (prod) | Comma-separated frontend origins (auto on Render) |
 | `NEXT_PUBLIC_BACKEND_URL` | Yes (prod) | Backend URL for the frontend (auto on Render) |
 
-> Scraping uses **Playwright** (bundled in the Docker image) — no ActionLayer key needed.
+> Scraping uses **Playwright** bundled in the Docker image.
 
 ## Deploy
 
@@ -125,7 +126,7 @@ See [`.env.example`](.env.example) (backend) and [`frontend/.env.example`](front
 1. Push this repo to GitHub.
 2. In [Render](https://dashboard.render.com) → **New** → **Blueprint**.
 3. Connect the repo — Render reads [`render.yaml`](render.yaml).
-4. When prompted, set **`GEMINI_API_KEY`** (from [Google AI Studio](https://aistudio.google.com/apikey)).
+4. When prompted, set **`OPENAI_API_KEY`** and **`CLAUDE_API_KEY`**.
 5. Deploy. Render wires `NEXT_PUBLIC_BACKEND_URL` and `CORS_ORIGINS` automatically.
 
 | Service | Plan | Why |
@@ -137,7 +138,8 @@ Optional env vars (set in Render dashboard → `ditto-api` → Environment):
 
 | Variable | Required | Get it from |
 |----------|----------|-------------|
-| `GEMINI_API_KEY` | **Yes** | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) |
+| `OPENAI_API_KEY` | **Yes** | OpenAI dashboard |
+| `CLAUDE_API_KEY` | **Yes** | Anthropic Console |
 | `ELEVENLABS_API_KEY` | No | [elevenlabs.io](https://elevenlabs.io) → Profile → API Key |
 | `FIREBASE_PROJECT_ID` | No | Firebase console |
 | `GOOGLE_MAPS_API_KEY` | No | Google Cloud Console (unused by UI) |

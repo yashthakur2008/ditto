@@ -12,4 +12,5 @@ def test_health_returns_ok():
     data = res.json()
     assert data["status"] == "ok"
     assert "config" in data
-    assert "gemini" in data["config"]
+    assert "openai" in data["config"]
+    assert "claude" in data["config"]

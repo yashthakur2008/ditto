@@ -24,14 +24,15 @@ gcloud run deploy "${SERVICE}" \
   --allow-unauthenticated \
   --project="${PROJECT_ID}" \
   --set-secrets="\
-GEMINI_API_KEY=GEMINI_API_KEY:latest,\
+OPENAI_API_KEY=OPENAI_API_KEY:latest,\
+CLAUDE_API_KEY=CLAUDE_API_KEY:latest,\
 GOOGLE_MAPS_API_KEY=GOOGLE_MAPS_API_KEY:latest,\
-ELEVENLABS_API_KEY=ELEVENLABS_API_KEY:latest,\
-ACTIONLAYER_KEY=ACTIONLAYER_KEY:latest" \
+ELEVENLABS_API_KEY=ELEVENLABS_API_KEY:latest" \
   --set-env-vars="\
 FIREBASE_PROJECT_ID=${PROJECT_ID},\
 CORS_ORIGINS=${CORS_ORIGINS},\
-GEMINI_MODEL=gemini-2.5-flash,\
+OPENAI_MODEL=gpt-4o-mini,\
+CLAUDE_MODEL=claude-3-5-sonnet-latest,\
 APP_ENV=production"
 
 echo ""

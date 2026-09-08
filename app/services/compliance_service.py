@@ -28,7 +28,7 @@ def country_from_latlng(lat: float, lng: float) -> str | None:
     return None
 
 
-# Maps country → plain-English compliance note for Gemini
+# Maps country → plain-English compliance note for the HTML transform prompt
 _STANDARDS: dict[str, str] = {
     "US": (
         "Follow ADA / WCAG 2.1 AA. Apply COPPA restrictions for users under 13 "

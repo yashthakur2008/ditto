@@ -3,7 +3,7 @@ Two-step pipeline:
   Step 1 — a local headless browser (Playwright) scrapes the live page
             (handles JS-rendered SPAs). Falls back to httpx + BeautifulSoup
             for simple pages or when the browser render fails.
-  Step 2 — Gemini classifies content safety, then transforms the HTML into
+  Step 2 — OpenAI classifies content safety, then transforms the HTML into
             an accessible rebuild tailored to the user's disability profile.
 
 Minor protection is tiered:
@@ -23,7 +23,7 @@ import httpx
 from bs4 import BeautifulSoup, Comment
 
 from app.config import settings
-from app.services import gemini_service, browser_service, score_service
+from app.services import openai_service, browser_service, score_service
 from app.models.schemas import TransformProfile
 from app.services.url_validation import validate_fetch_url
 
@@ -82,7 +82,7 @@ def _clean_html(raw_html: str) -> str:
         if tag is not None
     ]
     main = max(candidates, key=lambda t: len(t.get_text(strip=True)), default=soup)
-    # Gemini is billed by tokens in both directions — the rebuild prompt echoes
+    # LLM calls are billed by tokens in both directions — the rebuild prompt echoes
     # this content back in full, so trimming it directly cuts cost. 20k chars
     # (~5k tokens) comfortably covers a full article/page body.
     return str(main)[:20_000]
@@ -128,14 +128,10 @@ Content to classify:
 
 
 async def classify_content(html: str) -> tuple[str, str]:
-    """
-    Returns (level, reason).
-    level is 'safe', 'mild', or 'hardcore'.
-    Fast and cheap — light model, only the first 8 000 chars.
-    """
+    """Returns (level, reason) using the light OpenAI model."""
     snippet = html[:8_000]
     try:
-        raw = await gemini_service.generate(_CLASSIFY_PROMPT + snippet, model=settings.gemini_light_model)
+        raw = await openai_service.generate(_CLASSIFY_PROMPT + snippet, model=settings.openai_light_model)
         raw = raw.strip()
         if raw.startswith("```"):
             raw = raw.split("\n", 1)[1].rsplit("```", 1)[0]
@@ -252,7 +248,7 @@ def _build_transform_prompt(
 # same regardless of which profile the page is being rebuilt for. Caching
 # this step separately from the full result means re-rebuilding the same URL
 # for a different profile — e.g. a user tweaking their preferences and
-# re-running the same link — skips the browser render and one Gemini call
+# re-running the same link — skips the browser render and one LLM call
 # entirely, instead of only benefiting on an exact (url, profile) repeat.
 
 _SCRAPE_CACHE_TTL_SECONDS = 10 * 60
@@ -359,9 +355,9 @@ async def transform(
     else:
         content_level = "safe"
 
-    # Step 2b — Gemini transforms the page
+    # Step 2b — OpenAI transforms the page
     prompt = _build_transform_prompt(html, profile, content_level, compliance_note)
-    result = await gemini_service.generate(prompt)
+    result = await openai_service.generate(prompt)
     result = result.strip()
     if result.startswith("```"):
         result = result.split("\n", 1)[1].rsplit("```", 1)[0]

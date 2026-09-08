@@ -1,7 +1,7 @@
 """
 Local headless-browser scraping via Playwright.
 
-Renders JS/SPA pages (React, Next.js, etc.) the same way ActionLayer did,
+Renders JS/SPA pages (React, Next.js, etc.) locally with Playwright,
 but in-process — no external API key or vendor dependency.
 """
 import asyncio

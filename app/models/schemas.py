@@ -2,12 +2,12 @@ from pydantic import BaseModel
 from typing import Any, Literal
 
 
-class GeminiRequest(BaseModel):
+class OpenAIRequest(BaseModel):
     prompt: str
     system_prompt: str | None = None
 
 
-class GeminiResponse(BaseModel):
+class OpenAIResponse(BaseModel):
     text: str
 
 
@@ -101,7 +101,7 @@ class BatchTransformResponse(BaseModel):
     results: list[BatchTransformResult]
 
 
-# ── Agent action (ActionLayer) ────────────────────────────────────────────────
+# ── Agent action (Claude) ─────────────────────────────────────────────────────
 
 class AgentActionRequest(BaseModel):
     url: str

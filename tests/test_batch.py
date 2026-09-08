@@ -1,4 +1,4 @@
-"""Tests for /transform/batch validation paths (no network/Gemini calls)."""
+"""Tests for /transform/batch validation paths (no network LLM calls)."""
 from fastapi.testclient import TestClient
 
 from app.main import app
