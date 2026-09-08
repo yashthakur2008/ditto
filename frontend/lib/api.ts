@@ -103,6 +103,7 @@ export function preferencesToChatContext(
   const profile = preferencesToProfile(prefs);
   return {
     ...profile,
+    reason: prefs?.reason?.trim() || "",
     child_safe: prefs?.childSafe ?? false,
   };
 }

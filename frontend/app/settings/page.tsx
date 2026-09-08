@@ -189,6 +189,22 @@ export default function SettingsPage() {
               />
             )}
           </Field>
+          <Field
+            label="What brings you to Ditto?"
+            description="Optional. Ditto uses this only to make chat replies more relevant."
+          >
+            {(ids) => (
+              <textarea
+                id={ids.inputId}
+                className="field-input min-h-24 resize-y"
+                maxLength={240}
+                placeholder="e.g. I want dense pages simplified before I read them."
+                value={prefs.reason}
+                onChange={(e) => update({ reason: e.target.value })}
+                aria-describedby={ids["aria-describedby"]}
+              />
+            )}
+          </Field>
         </section>
 
         <section className="flex flex-col gap-10">

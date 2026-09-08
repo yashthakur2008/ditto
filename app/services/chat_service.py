@@ -19,6 +19,7 @@ async def chat(messages: list[dict], preferences: dict) -> str:
     disability = preferences.get("disability", "none")
     name = preferences.get("name", "")
     age = preferences.get("age", "")
+    reason = preferences.get("reason", "none")
 
     context = _CHAT_SYSTEM
     if disability and disability != "none":
@@ -27,6 +28,8 @@ async def chat(messages: list[dict], preferences: dict) -> str:
         context += f"\nUser's name is {name}."
     if age:
         context += f"\nUser is {age} years old."
+    if reason and reason != "none":
+        context += f"\nUser's reason for using Ditto: {reason}."
 
     convo = context + "\n\n---\n"
     for m in messages[-12:]:

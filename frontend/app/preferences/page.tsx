@@ -347,6 +347,22 @@ function AboutYou({
           />
         )}
       </Field>
+      <Field
+        label="What brings you to Ditto?"
+        description="Optional. A short note helps Ditto respond with more useful context in chat."
+      >
+        {(ids) => (
+          <textarea
+            id={ids.inputId}
+            className="field-input min-h-24 resize-y"
+            maxLength={240}
+            placeholder="e.g. I want news articles to feel calmer and easier to scan."
+            value={prefs.reason}
+            onChange={(e) => setPrefs({ ...prefs, reason: e.target.value })}
+            aria-describedby={ids["aria-describedby"]}
+          />
+        )}
+      </Field>
     </section>
   );
 }

@@ -72,7 +72,9 @@ _STANDARDS: dict[str, str] = {
 
 _DEFAULT = (
     "Follow WCAG 2.1 AA as the international baseline. "
-    "Remove third-party tracking and advertising."
+    "Remove third-party tracking and advertising. "
+    "The user's location is used only to look up the applicable regional "
+    "accessibility standard, not for any other purpose."
 )
 
 

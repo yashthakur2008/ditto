@@ -26,6 +26,8 @@ export type Preferences = {
   country: string;
   /** Optional self-reported age. Backend uses this to tune language complexity. */
   age: number | null;
+  /** Optional goal/context for why the user uses Ditto, shared with chat for better replies. */
+  reason: string;
   vision: VisionNeed[];
   hearing: HearingNeed[];
   dyslexia: DyslexiaSupport;
@@ -91,6 +93,7 @@ export const defaultPreferences: Preferences = {
   name: "",
   country: "",
   age: null,
+  reason: "",
   vision: [],
   hearing: [],
   dyslexia: "none",
