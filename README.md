@@ -161,6 +161,8 @@ CORS_ORIGINS=https://your-app.vercel.app ./deploy.sh your-gcp-project-id
 
 ## Development
 
+For startup-readiness follow-up, see [`SCALABILITY_ROADMAP.md`](SCALABILITY_ROADMAP.md).
+
 ```bash
 # Backend tests
 pytest
