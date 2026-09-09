@@ -51,6 +51,35 @@ def test_pilot_reading_list_rejects_empty_list():
     assert "at least one" in res.json()["detail"]
 
 
+def test_pilot_reading_list_summary_gives_readiness_next_step():
+    res = client.post(
+        "/pilot/reading-list",
+        json={
+            "name": "Mixed readings",
+            "reviewer": "Pilot lead",
+            "urls": ["https://example.com/article", "http://localhost:8080/private"],
+        },
+    )
+    assert res.status_code == 200
+    pilot_id = res.json()["pilot_id"]
+
+    summary_res = client.get(f"/pilot/reading-list/{pilot_id}/summary")
+    assert summary_res.status_code == 200
+    summary = summary_res.json()
+    assert summary["pilot_id"] == pilot_id
+    assert summary["total_urls"] == 2
+    assert summary["ready_count"] == 1
+    assert summary["blocked_count"] == 1
+    assert summary["readiness_rate"] == 0.5
+    assert summary["blocked_domains"] == ["localhost"]
+    assert "Review blocked URLs" in summary["recommended_next_step"]
+
+
+def test_missing_pilot_summary_returns_404():
+    res = client.get("/pilot/reading-list/notfound/summary")
+    assert res.status_code == 404
+
+
 def test_pilot_reading_list_exports_csv_report():
     res = client.post(
         "/pilot/reading-list",

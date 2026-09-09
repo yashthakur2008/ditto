@@ -131,6 +131,18 @@ class PilotReadingListResponse(BaseModel):
     items: list[PilotReadingItem]
 
 
+class PilotReadinessSummary(BaseModel):
+    pilot_id: str
+    name: str
+    reviewer: str = ""
+    total_urls: int
+    ready_count: int
+    blocked_count: int
+    readiness_rate: float
+    blocked_domains: list[str] = Field(default_factory=list)
+    recommended_next_step: str
+
+
 # ── Agent action (Claude) ─────────────────────────────────────────────────────
 
 class AgentActionRequest(BaseModel):

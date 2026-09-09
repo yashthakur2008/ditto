@@ -20,6 +20,7 @@ from app.models.schemas import (
     PilotReadingItem,
     PilotReadingListRequest,
     PilotReadingListResponse,
+    PilotReadinessSummary,
     TransformProfile,
 )
 from app.config import settings
@@ -302,12 +303,49 @@ async def create_pilot_reading_list(req: PilotReadingListRequest) -> PilotReadin
     return response
 
 
+def _pilot_summary(record: PilotReadingListResponse) -> PilotReadinessSummary:
+    readiness_rate = round(record.ready_count / record.total_urls, 3) if record.total_urls else 0.0
+    blocked_domains = sorted(
+        {
+            (urlparse(item.url).hostname or "unknown").lower()
+            for item in record.items
+            if item.status == "blocked"
+        }
+    )
+    if record.ready_count == record.total_urls:
+        recommended_next_step = "Ready to run a small transform pilot with these readings."
+    elif record.ready_count == 0:
+        recommended_next_step = "Replace blocked URLs before inviting students."
+    else:
+        recommended_next_step = "Review blocked URLs, then run the ready readings as the first pilot batch."
+
+    return PilotReadinessSummary(
+        pilot_id=record.pilot_id,
+        name=record.name,
+        reviewer=record.reviewer,
+        total_urls=record.total_urls,
+        ready_count=record.ready_count,
+        blocked_count=record.blocked_count,
+        readiness_rate=readiness_rate,
+        blocked_domains=blocked_domains,
+        recommended_next_step=recommended_next_step,
+    )
+
+
 @router.get("/pilot/reading-list/{pilot_id}", response_model=PilotReadingListResponse)
 async def get_pilot_reading_list(pilot_id: str) -> PilotReadingListResponse:
     record = _pilot_reading_lists.get(pilot_id)
     if record is None:
         raise HTTPException(status_code=404, detail="Pilot reading list not found.")
     return record
+
+
+@router.get("/pilot/reading-list/{pilot_id}/summary", response_model=PilotReadinessSummary)
+async def get_pilot_readiness_summary(pilot_id: str) -> PilotReadinessSummary:
+    record = _pilot_reading_lists.get(pilot_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Pilot reading list not found.")
+    return _pilot_summary(record)
 
 
 @router.get("/pilot/reading-list/{pilot_id}/report.csv")
