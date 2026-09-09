@@ -9,6 +9,8 @@ Use this checklist to turn Ditto into a stronger LinkedIn, GitHub, and recruiter
 - [x] Scalability roadmap names the reliability, cost, safety, and accessibility gaps before production.
 - [x] School accessibility readiness plan frames a fundable first wedge.
 - [x] Demo script is available in `DEMO_SCRIPT.md`.
+- [x] Tomorrow runbook is available in `TOMORROW_DEMO_READINESS.md`.
+- [x] Demo-safe URL and no-secrets checklist is available in `DEMO_SAFE_URLS.md`.
 - [x] LinkedIn post draft is available in `LINKEDIN_POST_DRAFT.md`.
 
 ## Demo assets to capture

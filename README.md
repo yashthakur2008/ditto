@@ -15,7 +15,7 @@ Paste a link, and Ditto scrapes the page, scores its accessibility, and returns 
 | **Distribution** | Web app plus Chrome Manifest V3 extension for one-click active-tab rebuilds |
 | **Startup path** | School accessibility wedge documented in [`SCALABILITY_ROADMAP.md`](SCALABILITY_ROADMAP.md) and [`SCHOOL_ACCESSIBILITY_READINESS.md`](SCHOOL_ACCESSIBILITY_READINESS.md) |
 
-For portfolio assets, see [`PORTFOLIO_CASE_STUDY.md`](PORTFOLIO_CASE_STUDY.md), [`DEMO_SCRIPT.md`](DEMO_SCRIPT.md), [`LINKEDIN_POST_DRAFT.md`](LINKEDIN_POST_DRAFT.md), and [`PORTFOLIO_CHECKLIST.md`](PORTFOLIO_CHECKLIST.md).
+For portfolio assets, see [`PORTFOLIO_CASE_STUDY.md`](PORTFOLIO_CASE_STUDY.md), [`DEMO_SCRIPT.md`](DEMO_SCRIPT.md), [`TOMORROW_DEMO_READINESS.md`](TOMORROW_DEMO_READINESS.md), [`DEMO_SAFE_URLS.md`](DEMO_SAFE_URLS.md), [`LINKEDIN_POST_DRAFT.md`](LINKEDIN_POST_DRAFT.md), and [`PORTFOLIO_CHECKLIST.md`](PORTFOLIO_CHECKLIST.md).
 
 ## Live demo
 
