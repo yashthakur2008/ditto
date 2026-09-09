@@ -305,6 +305,15 @@ async def create_pilot_reading_list(req: PilotReadingListRequest) -> PilotReadin
 
 def _pilot_summary(record: PilotReadingListResponse) -> PilotReadinessSummary:
     readiness_rate = round(record.ready_count / record.total_urls, 3) if record.total_urls else 0.0
+    normalized_urls = [item.url.strip().lower() for item in record.items]
+    duplicate_url_count = len(normalized_urls) - len(set(normalized_urls))
+    ready_domains = sorted(
+        {
+            item.approved_domain
+            for item in record.items
+            if item.status == "ready" and item.approved_domain
+        }
+    )
     blocked_domains = sorted(
         {
             (urlparse(item.url).hostname or "unknown").lower()
@@ -312,7 +321,9 @@ def _pilot_summary(record: PilotReadingListResponse) -> PilotReadinessSummary:
             if item.status == "blocked"
         }
     )
-    if record.ready_count == record.total_urls:
+    if duplicate_url_count:
+        recommended_next_step = "Remove duplicate URLs to reduce pilot cost, then review any blocked readings."
+    elif record.ready_count == record.total_urls:
         recommended_next_step = "Ready to run a small transform pilot with these readings."
     elif record.ready_count == 0:
         recommended_next_step = "Replace blocked URLs before inviting students."
@@ -327,7 +338,9 @@ def _pilot_summary(record: PilotReadingListResponse) -> PilotReadinessSummary:
         ready_count=record.ready_count,
         blocked_count=record.blocked_count,
         readiness_rate=readiness_rate,
+        ready_domains=ready_domains,
         blocked_domains=blocked_domains,
+        duplicate_url_count=duplicate_url_count,
         recommended_next_step=recommended_next_step,
     )
 

@@ -139,7 +139,9 @@ class PilotReadinessSummary(BaseModel):
     ready_count: int
     blocked_count: int
     readiness_rate: float
+    ready_domains: list[str] = Field(default_factory=list)
     blocked_domains: list[str] = Field(default_factory=list)
+    duplicate_url_count: int = 0
     recommended_next_step: str
 
 

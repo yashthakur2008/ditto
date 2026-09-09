@@ -71,8 +71,29 @@ def test_pilot_reading_list_summary_gives_readiness_next_step():
     assert summary["ready_count"] == 1
     assert summary["blocked_count"] == 1
     assert summary["readiness_rate"] == 0.5
+    assert summary["ready_domains"] == ["example.com"]
     assert summary["blocked_domains"] == ["localhost"]
+    assert summary["duplicate_url_count"] == 0
     assert "Review blocked URLs" in summary["recommended_next_step"]
+
+
+def test_pilot_reading_list_summary_flags_duplicate_urls():
+    res = client.post(
+        "/pilot/reading-list",
+        json={
+            "name": "Duplicate readings",
+            "urls": ["https://example.com/article", "https://example.com/article"],
+        },
+    )
+    assert res.status_code == 200
+    pilot_id = res.json()["pilot_id"]
+
+    summary_res = client.get(f"/pilot/reading-list/{pilot_id}/summary")
+    assert summary_res.status_code == 200
+    summary = summary_res.json()
+    assert summary["duplicate_url_count"] == 1
+    assert summary["ready_domains"] == ["example.com"]
+    assert "Remove duplicate URLs" in summary["recommended_next_step"]
 
 
 def test_missing_pilot_summary_returns_404():
