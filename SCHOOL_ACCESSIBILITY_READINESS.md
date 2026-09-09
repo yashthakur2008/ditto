@@ -2,6 +2,8 @@
 
 Ditto's most fundable wedge is not a general-purpose browser. It is a pilot tool for school accessibility teams that need to make assigned digital readings usable for students with dyslexia, ADHD, low vision, screen-reader needs, cognitive overload, and emerging literacy needs.
 
+For a more detailed pilot operating plan, buyer narrative, privacy/safety checklist, metrics plan, and implementation roadmap, see [`SCHOOL_ACCESSIBILITY_OPERATING_PLAN.md`](SCHOOL_ACCESSIBILITY_OPERATING_PLAN.md).
+
 ## Pilot positioning
 
 **Promise:** turn required reading links into student-specific accessible versions, with an audit trail that helps schools understand whether content became easier to navigate, read, and support.
@@ -75,10 +77,11 @@ Track outcomes that a school can understand without trusting AI marketing claims
 
 ## Next implementation tickets
 
-1. Add a staff-facing report object: source URL, transformed URL/share id, profile category, before/after score, axe issue summary, timestamp, reviewer.
-2. Add keyboard and axe validation for the main app flow.
-3. Add revocable share links before any real pilot.
+1. Add revocable share links before any real pilot.
+2. Add a staff-facing report object: source URL, transformed URL/share id, profile category, before/after score, axe issue summary, timestamp, reviewer.
+3. Add keyboard and axe validation for the main app flow.
 4. Add persistent cache keyed by canonical URL, content hash, profile hash, model version, and prompt version.
+5. Add staff review status for transformed readings before student release.
 
 ## Implemented foundation
 

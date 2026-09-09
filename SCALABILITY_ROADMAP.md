@@ -4,7 +4,7 @@ Current startup scalability rating: **5.5 / 10**.
 
 This repo has a strong MVP slice: FastAPI backend, Next.js frontend, Chrome extension, Playwright scraping, OpenAI-powered transforms/chat/scoring, Claude-powered agent actions, Firebase-backed optional profile/history, sharing, and TTS. The next jump is not more demo features. It is reliability, cost control, safety, and operating discipline.
 
-For the first fundable wedge, see [`SCHOOL_ACCESSIBILITY_READINESS.md`](SCHOOL_ACCESSIBILITY_READINESS.md).
+For the first fundable wedge, see [`SCHOOL_ACCESSIBILITY_READINESS.md`](SCHOOL_ACCESSIBILITY_READINESS.md) and the pilot operating plan in [`SCHOOL_ACCESSIBILITY_OPERATING_PLAN.md`](SCHOOL_ACCESSIBILITY_OPERATING_PLAN.md).
 
 ## Highest-priority fixes
 
