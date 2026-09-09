@@ -51,6 +51,36 @@ def test_pilot_reading_list_rejects_empty_list():
     assert "at least one" in res.json()["detail"]
 
 
+def test_pilot_reading_list_exports_csv_report():
+    res = client.post(
+        "/pilot/reading-list",
+        json={
+            "name": "CSV readings",
+            "reviewer": "Pilot lead",
+            "profile_categories": ["adhd"],
+            "urls": ["https://example.com/article", "http://localhost:8080/private"],
+        },
+    )
+    assert res.status_code == 200
+    pilot_id = res.json()["pilot_id"]
+
+    csv_res = client.get(f"/pilot/reading-list/{pilot_id}/report.csv")
+    assert csv_res.status_code == 200
+    assert csv_res.headers["content-type"].startswith("text/csv")
+    assert f"ditto-pilot-{pilot_id}.csv" in csv_res.headers["content-disposition"]
+    body = csv_res.text
+    assert "pilot_id,name,reviewer,url,status,approved_domain" in body
+    assert f"{pilot_id},CSV readings,Pilot lead,https://example.com/article,ready,example.com,adhd" in body
+    assert "http://localhost:8080/private,blocked" in body
+
+
+def test_missing_pilot_csv_report_returns_404():
+    res = client.get("/pilot/reading-list/notfound/report.csv")
+    assert res.status_code == 404
+
+
 def test_missing_pilot_reading_list_returns_404():
     res = client.get("/pilot/reading-list/notfound")
     assert res.status_code == 404
+
+

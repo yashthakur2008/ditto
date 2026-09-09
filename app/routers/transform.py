@@ -1,9 +1,12 @@
 import asyncio
+import csv
 import hashlib
+import io
 import time
 import traceback
 from urllib.parse import urlparse
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from app.models.schemas import (
@@ -305,6 +308,53 @@ async def get_pilot_reading_list(pilot_id: str) -> PilotReadingListResponse:
     if record is None:
         raise HTTPException(status_code=404, detail="Pilot reading list not found.")
     return record
+
+
+@router.get("/pilot/reading-list/{pilot_id}/report.csv")
+async def export_pilot_reading_list_csv(pilot_id: str) -> StreamingResponse:
+    """Export a coordinator-friendly pilot readiness report."""
+    record = _pilot_reading_lists.get(pilot_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Pilot reading list not found.")
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(
+        [
+            "pilot_id",
+            "name",
+            "reviewer",
+            "url",
+            "status",
+            "approved_domain",
+            "profile_categories",
+            "before_score_total",
+            "after_score_total",
+            "error",
+        ]
+    )
+    for item in record.items:
+        writer.writerow(
+            [
+                record.pilot_id,
+                record.name,
+                record.reviewer,
+                item.url,
+                item.status,
+                item.approved_domain or "",
+                ";".join(item.profile_categories),
+                "" if item.before_score_total is None else item.before_score_total,
+                "" if item.after_score_total is None else item.after_score_total,
+                item.error or "",
+            ]
+        )
+
+    filename = f"ditto-pilot-{record.pilot_id}.csv"
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 # ── /history ──────────────────────────────────────────────────────────────────

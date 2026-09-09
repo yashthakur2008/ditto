@@ -99,6 +99,7 @@ page rebuild itself uses the full `OPENAI_MODEL`.
 | GET | `/history/{uid}/report` | Downloadable CSV audit trail of before/after scores |
 | POST | `/pilot/reading-list` | Validate a school pilot reading list without scraping/LLM spend |
 | GET | `/pilot/reading-list/{id}` | Fetch an in-memory pilot reading-list scaffold |
+| GET | `/pilot/reading-list/{id}/report.csv` | Download coordinator CSV for pilot readiness evidence |
 | POST | `/share` | Persist a rebuilt page, returns a short id for `/r/{id}` |
 | GET | `/share/{id}` | Fetch a previously shared rebuilt page |
 

@@ -66,6 +66,7 @@ A student who receives links to articles, course pages, public resources, or web
 
 - `POST /pilot/reading-list` validates an approved reading list without spending scrape or LLM budget.
 - `GET /pilot/reading-list/{pilot_id}` retrieves the in-process pilot record for local/demo review.
+- `GET /pilot/reading-list/{pilot_id}/report.csv` exports a coordinator-friendly CSV readiness report for pilot evidence packets.
 - Each reading item reports `ready` or `blocked`, the approved domain, profile categories, and future before/after score fields.
 - The scaffold honors existing URL safety and school-domain controls. It is intentionally in-memory until auth, persistence, and reviewer workflows are designed.
 
