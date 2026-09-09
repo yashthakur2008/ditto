@@ -1,8 +1,21 @@
-# Ditto — Accessible Web, Your Way
+# Ditto — AI Accessibility Browser
 
-Ditto rebuilds any webpage to match how **you** read — whether you use a screen reader, need dyslexia-friendly typography, want captions and transcripts, or prefer larger text and calmer layouts.
+Ditto is a full-stack AI accessibility project that rebuilds any webpage around how **you** read, whether you use a screen reader, need dyslexia-friendly typography, want captions and transcripts, or prefer larger text and calmer layouts.
 
 Paste a link, and Ditto scrapes the page, scores its accessibility, and returns a rebuilt HTML version tailored to your needs.
+
+## Portfolio snapshot
+
+| Area | What it shows |
+|---|---|
+| **Product** | Personalized accessibility layer for arbitrary web pages |
+| **Frontend** | Next.js 15 app with onboarding, preferences, chat, batch transforms, output, sharing, and settings |
+| **Backend** | FastAPI API with scraping, transform, score, TTS, profile/history, sharing, maps, and agent routes |
+| **AI** | OpenAI for transform/chat/scoring and Claude for agent action planning |
+| **Distribution** | Web app plus Chrome Manifest V3 extension for one-click active-tab rebuilds |
+| **Startup path** | School accessibility wedge documented in [`SCALABILITY_ROADMAP.md`](SCALABILITY_ROADMAP.md) and [`SCHOOL_ACCESSIBILITY_READINESS.md`](SCHOOL_ACCESSIBILITY_READINESS.md) |
+
+For the LinkedIn/project writeup, see [`PORTFOLIO_CASE_STUDY.md`](PORTFOLIO_CASE_STUDY.md).
 
 ## Live demo
 
@@ -162,6 +175,8 @@ CORS_ORIGINS=https://your-app.vercel.app ./deploy.sh your-gcp-project-id
 ## Development
 
 For startup-readiness follow-up, see [`SCALABILITY_ROADMAP.md`](SCALABILITY_ROADMAP.md).
+For a recruiter/founder-facing walkthrough and demo script, see [`PORTFOLIO_CASE_STUDY.md`](PORTFOLIO_CASE_STUDY.md).
+For the first fundable pilot wedge, see [`SCHOOL_ACCESSIBILITY_READINESS.md`](SCHOOL_ACCESSIBILITY_READINESS.md).
 
 ```bash
 # Backend tests

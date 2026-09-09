@@ -55,6 +55,21 @@ export default function HomePage() {
                   How it works
                 </a>
               </div>
+              <dl className="mt-4 grid gap-3 sm:grid-cols-3" aria-label="Ditto project proof points">
+                {proofPoints.map((point) => (
+                  <div
+                    key={point.label}
+                    className="rounded-[var(--radius-md)] border border-[var(--color-rule)] bg-white/70 px-4 py-3"
+                  >
+                    <dt className="font-[family-name:var(--font-display)] text-2xl font-bold text-[var(--color-ink)]">
+                      {point.value}
+                    </dt>
+                    <dd className="mt-1 text-xs uppercase tracking-[0.12em] text-[var(--color-ink-muted)]">
+                      {point.label}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </div>
 
             <aside
@@ -89,6 +104,34 @@ export default function HomePage() {
                 </div>
               </div>
             </aside>
+          </div>
+        </Container>
+      </section>
+
+      {/* Portfolio proof */}
+      <section className="border-b border-[var(--color-rule)] bg-white/50">
+        <Container size="lg">
+          <div className="grid gap-8 py-16 sm:py-20 md:grid-cols-[0.9fr_1.1fr] md:items-start">
+            <div>
+              <p className="font-[family-name:var(--font-display)] text-[var(--color-ink-muted)] text-sm uppercase tracking-[0.18em]">
+                Portfolio-ready full stack
+              </p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight text-[var(--color-ink)] sm:text-4xl">
+                Not just a chatbot. A complete accessibility product loop.
+              </h2>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {portfolioHighlights.map((item) => (
+                <article key={item.title} className="surface p-5">
+                  <h3 className="font-[family-name:var(--font-display)] text-lg font-semibold text-[var(--color-ink)]">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--color-ink-soft)]">
+                    {item.body}
+                  </p>
+                </article>
+              ))}
+            </div>
           </div>
         </Container>
       </section>
@@ -156,6 +199,27 @@ export default function HomePage() {
       </section>
 
       {/* Closing CTA */}
+      <section className="border-b border-[var(--color-rule)]">
+        <Container size="lg">
+          <div className="grid gap-8 py-16 sm:py-20 md:grid-cols-[1fr_1fr] md:items-center">
+            <div>
+              <p className="font-[family-name:var(--font-display)] text-[var(--color-ink-muted)] text-sm uppercase tracking-[0.18em]">
+                Startup wedge
+              </p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight text-[var(--color-ink)] sm:text-4xl">
+                Built for the web today. Pointed at accessible learning next.
+              </h2>
+            </div>
+            <p className="prose-measure text-lg leading-relaxed text-[var(--color-ink-soft)]">
+              Ditto&rsquo;s strongest fundable path is schools: convert dense learning
+              content into student-specific reading experiences, then prove the
+              lift with WCAG checks, comprehension outcomes, and privacy-first
+              admin controls.
+            </p>
+          </div>
+        </Container>
+      </section>
+
       <section>
         <Container size="lg">
           <div className="flex flex-col items-start gap-6 py-20 sm:py-28">
@@ -191,6 +255,31 @@ const howSteps = [
     n: 3,
     title: "Get a clearer version.",
     body: "Switch between Original, Simplified, and Screen-reader friendly views. Read it the way that works for you.",
+  },
+];
+
+const proofPoints = [
+  { value: "8", label: "reader profiles" },
+  { value: "3", label: "surfaces shipped" },
+  { value: "33", label: "backend tests" },
+];
+
+const portfolioHighlights = [
+  {
+    title: "Personalized rebuild pipeline",
+    body: "Scrapes real pages, classifies safety, rewrites HTML with OpenAI, then scores before and after accessibility.",
+  },
+  {
+    title: "Browser extension distribution",
+    body: "Chrome MV3 extension rebuilds the active tab without copy-pasting links into the web app.",
+  },
+  {
+    title: "Privacy-aware defaults",
+    body: "Preferences live in the browser, recent history is opt-in, and shared pages publish rebuilt HTML without the profile.",
+  },
+  {
+    title: "Startup roadmap included",
+    body: "The repo documents the path to queues, quotas, persistent caching, observability, auth, and real WCAG validation.",
   },
 ];
 
