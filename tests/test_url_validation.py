@@ -28,3 +28,23 @@ def test_rejects_private_ip_literal():
 def test_rejects_empty_url():
     with pytest.raises(URLValidationError, match="No URL"):
         validate_fetch_url("")
+
+
+def test_school_mode_accepts_allowed_domain(monkeypatch):
+    from app.services import url_validation
+
+    monkeypatch.setattr(url_validation.settings, "school_mode", True)
+    monkeypatch.setattr(url_validation.settings, "school_allowed_domains", "example.com,.khanacademy.org")
+
+    assert validate_fetch_url("https://www.example.com/page") == "https://www.example.com/page"
+    assert validate_fetch_url("https://learn.khanacademy.org/math") == "https://learn.khanacademy.org/math"
+
+
+def test_school_mode_rejects_unapproved_domain(monkeypatch):
+    from app.services import url_validation
+
+    monkeypatch.setattr(url_validation.settings, "school_mode", True)
+    monkeypatch.setattr(url_validation.settings, "school_allowed_domains", "example.edu")
+
+    with pytest.raises(URLValidationError, match="not approved"):
+        validate_fetch_url("https://example.com/page")

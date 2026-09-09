@@ -5,6 +5,8 @@ import ipaddress
 import socket
 from urllib.parse import urlparse
 
+from app.config import settings
+
 _BLOCKED_HOSTS = frozenset({"localhost", "127.0.0.1", "0.0.0.0", "::1"})
 
 
@@ -26,6 +28,30 @@ def _is_private_ip(addr: str) -> bool:
     )
 
 
+def _allowed_school_domains() -> list[str]:
+    return [
+        domain.strip().lower().lstrip(".").rstrip(".")
+        for domain in settings.school_allowed_domains.split(",")
+        if domain.strip()
+    ]
+
+
+def _host_matches_allowed_domain(host: str, allowed_domain: str) -> bool:
+    return host == allowed_domain or host.endswith(f".{allowed_domain}")
+
+
+def _validate_school_domain(host: str) -> None:
+    if not settings.school_mode:
+        return
+
+    allowed = _allowed_school_domains()
+    if not allowed:
+        raise URLValidationError("School mode is enabled, but no approved domains are configured.")
+
+    if not any(_host_matches_allowed_domain(host, domain) for domain in allowed):
+        raise URLValidationError("This URL's domain is not approved for school mode.")
+
+
 def validate_fetch_url(url: str) -> str:
     """Return a normalized URL or raise URLValidationError."""
     if not url or not isinstance(url, str):
@@ -38,6 +64,8 @@ def validate_fetch_url(url: str) -> str:
     host = (parsed.hostname or "").lower().rstrip(".")
     if not host:
         raise URLValidationError("URL is missing a hostname.")
+
+    _validate_school_domain(host)
 
     if host in _BLOCKED_HOSTS or host.endswith(".localhost"):
         raise URLValidationError("Local and loopback URLs are not allowed.")

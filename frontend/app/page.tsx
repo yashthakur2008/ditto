@@ -54,6 +54,12 @@ export default function HomePage() {
                 >
                   How it works
                 </a>
+                <a
+                  href="https://github.com/yashthakur2008/ditto"
+                  className="btn-quiet underline-offset-4 hover:underline"
+                >
+                  View repo
+                </a>
               </div>
               <dl className="mt-4 grid gap-3 sm:grid-cols-3" aria-label="Ditto project proof points">
                 {proofPoints.map((point) => (
@@ -201,7 +207,7 @@ export default function HomePage() {
       {/* Closing CTA */}
       <section className="border-b border-[var(--color-rule)]">
         <Container size="lg">
-          <div className="grid gap-8 py-16 sm:py-20 md:grid-cols-[1fr_1fr] md:items-center">
+          <div className="grid gap-8 py-16 sm:py-20 md:grid-cols-[0.85fr_1.15fr] md:items-start">
             <div>
               <p className="font-[family-name:var(--font-display)] text-[var(--color-ink-muted)] text-sm uppercase tracking-[0.18em]">
                 Startup wedge
@@ -209,13 +215,24 @@ export default function HomePage() {
               <h2 className="mt-3 text-3xl font-bold tracking-tight text-[var(--color-ink)] sm:text-4xl">
                 Built for the web today. Pointed at accessible learning next.
               </h2>
+              <p className="mt-5 prose-measure text-lg leading-relaxed text-[var(--color-ink-soft)]">
+                The fundable path is schools: turn assigned readings into
+                student-specific accessible pages, then prove the lift with
+                measurable outcomes and privacy-first controls.
+              </p>
             </div>
-            <p className="prose-measure text-lg leading-relaxed text-[var(--color-ink-soft)]">
-              Ditto&rsquo;s strongest fundable path is schools: convert dense learning
-              content into student-specific reading experiences, then prove the
-              lift with WCAG checks, comprehension outcomes, and privacy-first
-              admin controls.
-            </p>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {schoolReadiness.map((item) => (
+                <article key={item.title} className="surface p-5">
+                  <h3 className="font-[family-name:var(--font-display)] text-base font-semibold text-[var(--color-ink)]">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--color-ink-soft)]">
+                    {item.body}
+                  </p>
+                </article>
+              ))}
+            </div>
           </div>
         </Container>
       </section>
@@ -280,6 +297,21 @@ const portfolioHighlights = [
   {
     title: "Startup roadmap included",
     body: "The repo documents the path to queues, quotas, persistent caching, observability, auth, and real WCAG validation.",
+  },
+];
+
+const schoolReadiness = [
+  {
+    title: "Approved content",
+    body: "Start with teacher-provided readings and approved domains before opening the whole web.",
+  },
+  {
+    title: "Measurable lift",
+    body: "Track WCAG issue movement, completion, student confidence, and staff prep time saved.",
+  },
+  {
+    title: "Privacy-first pilot",
+    body: "Keep preferences local when possible, avoid sensitive profile storage, and make reports audit-friendly.",
   },
 ];
 

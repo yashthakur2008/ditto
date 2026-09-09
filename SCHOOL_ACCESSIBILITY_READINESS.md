@@ -75,8 +75,13 @@ Track outcomes that a school can understand without trusting AI marketing claims
 
 ## Next implementation tickets
 
-1. Add `SCHOOL_ALLOWED_DOMAINS` config and reject non-approved domains when `SCHOOL_MODE=true`.
-2. Add a staff-facing report object: source URL, transformed URL/share id, profile category, before/after score, axe issue summary, timestamp, reviewer.
-3. Add keyboard and axe validation for the main app flow.
-4. Add revocable share links before any real pilot.
-5. Add persistent cache keyed by canonical URL, content hash, profile hash, model version, and prompt version.
+1. Add a staff-facing report object: source URL, transformed URL/share id, profile category, before/after score, axe issue summary, timestamp, reviewer.
+2. Add keyboard and axe validation for the main app flow.
+3. Add revocable share links before any real pilot.
+4. Add persistent cache keyed by canonical URL, content hash, profile hash, model version, and prompt version.
+
+## Implemented foundation
+
+- `SCHOOL_MODE=true` enables approved-domain enforcement before server-side fetching.
+- `SCHOOL_ALLOWED_DOMAINS` accepts a comma-separated allowlist, with subdomains included.
+- URL validation tests cover allowed school domains and rejection of unapproved domains.

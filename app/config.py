@@ -34,6 +34,9 @@ class Settings(BaseSettings):
 
     cors_origins: str = "http://localhost:3000"
 
+    school_mode: bool = False
+    school_allowed_domains: str = ""
+
     app_env: str = "development"
     port: int = 8080
 
