@@ -28,7 +28,7 @@ That makes Ditto a full-stack product, not a prompt demo.
 
 ## Demo script for LinkedIn or portfolio video
 
-Use this for a 60 to 90 second recording:
+Use this for a 60 to 90 second recording. A standalone recording checklist and narration lives in [`DEMO_SCRIPT.md`](DEMO_SCRIPT.md).
 
 1. Start on the landing page: "This is Ditto, an AI accessibility browser for people who read differently."
 2. Show the proof strip: reader profiles, shipped surfaces, backend tests.
