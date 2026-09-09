@@ -22,6 +22,8 @@ from app.models.schemas import (
     PilotReadingListResponse,
     PilotReadinessSummary,
     PilotPrivacyNotice,
+    PilotLaunchChecklist,
+    PilotChecklistItem,
     TransformProfile,
 )
 from app.config import settings
@@ -269,6 +271,22 @@ async def get_pilot_privacy_notice() -> PilotPrivacyNotice:
         ],
         retention_note="Pilot scaffold data is in-memory in local/demo mode until school-approved persistence is configured.",
         consent_note="Students and coordinators should review this notice before a pilot and use only approved course readings.",
+    )
+
+
+@router.get("/pilot/launch-checklist", response_model=PilotLaunchChecklist)
+async def get_pilot_launch_checklist() -> PilotLaunchChecklist:
+    """Coordinator checklist for launching a small school pilot safely."""
+    return PilotLaunchChecklist(
+        title="Ditto school pilot launch checklist",
+        items=[
+            PilotChecklistItem(id="privacy_notice", label="Share the Ditto pilot privacy notice with students and coordinators.", owner="coordinator"),
+            PilotChecklistItem(id="approved_readings", label="Submit only school-approved public reading URLs.", owner="coordinator"),
+            PilotChecklistItem(id="student_profiles", label="Collect only the accessibility profile categories needed for the pilot.", owner="coordinator"),
+            PilotChecklistItem(id="url_readiness", label="Confirm the reading-list summary has no blocked or duplicate URLs before launch.", owner="ditto"),
+            PilotChecklistItem(id="student_consent", label="Confirm student consent and explain that Ditto is not monitoring browsing history.", owner="coordinator"),
+            PilotChecklistItem(id="feedback_window", label="Schedule a short student feedback window after the first reading batch.", owner="coordinator"),
+        ],
     )
 
 

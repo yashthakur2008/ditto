@@ -6,6 +6,17 @@ from app.main import app
 client = TestClient(app)
 
 
+def test_pilot_launch_checklist_covers_privacy_urls_and_feedback():
+    res = client.get("/pilot/launch-checklist")
+    assert res.status_code == 200
+    data = res.json()
+    assert "launch checklist" in data["title"]
+    ids = {item["id"] for item in data["items"]}
+    assert {"privacy_notice", "approved_readings", "url_readiness", "student_consent", "feedback_window"}.issubset(ids)
+    assert all(item["required"] for item in data["items"])
+    assert any(item["owner"] == "ditto" for item in data["items"])
+
+
 def test_pilot_privacy_notice_is_plain_language_and_minimizes_data():
     res = client.get("/pilot/privacy-notice")
     assert res.status_code == 200

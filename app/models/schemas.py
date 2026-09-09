@@ -155,6 +155,18 @@ class PilotPrivacyNotice(BaseModel):
     consent_note: str
 
 
+class PilotChecklistItem(BaseModel):
+    id: str
+    label: str
+    owner: Literal["coordinator", "student", "ditto"]
+    required: bool = True
+
+
+class PilotLaunchChecklist(BaseModel):
+    title: str
+    items: list[PilotChecklistItem]
+
+
 # ── Agent action (Claude) ─────────────────────────────────────────────────────
 
 class AgentActionRequest(BaseModel):
