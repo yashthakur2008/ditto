@@ -66,6 +66,7 @@ A student who receives links to articles, course pages, public resources, or web
 
 - `GET /pilot/privacy-notice` provides plain-language student/coordinator privacy and consent copy.
 - `GET /pilot/launch-checklist` provides a coordinator checklist for privacy, approved readings, readiness, consent, and feedback.
+- `GET /pilot/success-criteria` defines measurable targets and evidence sources for evaluating pilot success.
 - `POST /pilot/reading-list` validates an approved reading list without spending scrape or LLM budget.
 - `GET /pilot/reading-list/{pilot_id}` retrieves the in-process pilot record for local/demo review.
 - `GET /pilot/reading-list/{pilot_id}/summary` returns readiness rate, ready/blocked domains, duplicate count, and a recommended next step.

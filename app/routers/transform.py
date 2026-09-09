@@ -24,6 +24,8 @@ from app.models.schemas import (
     PilotPrivacyNotice,
     PilotLaunchChecklist,
     PilotChecklistItem,
+    PilotSuccessCriteria,
+    PilotSuccessCriterion,
     TransformProfile,
 )
 from app.config import settings
@@ -286,6 +288,21 @@ async def get_pilot_launch_checklist() -> PilotLaunchChecklist:
             PilotChecklistItem(id="url_readiness", label="Confirm the reading-list summary has no blocked or duplicate URLs before launch.", owner="ditto"),
             PilotChecklistItem(id="student_consent", label="Confirm student consent and explain that Ditto is not monitoring browsing history.", owner="coordinator"),
             PilotChecklistItem(id="feedback_window", label="Schedule a short student feedback window after the first reading batch.", owner="coordinator"),
+        ],
+    )
+
+
+@router.get("/pilot/success-criteria", response_model=PilotSuccessCriteria)
+async def get_pilot_success_criteria() -> PilotSuccessCriteria:
+    """Measurable outcomes for deciding whether a school pilot worked."""
+    return PilotSuccessCriteria(
+        title="Ditto school pilot success criteria",
+        criteria=[
+            PilotSuccessCriterion(id="transform_success_rate", label="Approved readings transform successfully", target="80%+ of approved reading URLs", evidence_source="reading-list summary and transform logs"),
+            PilotSuccessCriterion(id="accessibility_delta", label="Transformed pages improve deterministic accessibility", target="50%+ reduction in measured accessibility issues", evidence_source="before/after score reports"),
+            PilotSuccessCriterion(id="student_preference", label="Students prefer the Ditto version for dense readings", target="70%+ positive preference from student testers", evidence_source="post-reading student feedback"),
+            PilotSuccessCriterion(id="latency", label="Uncached readings complete fast enough for classroom use", target="median transform under 60 seconds", evidence_source="transform timestamps"),
+            PilotSuccessCriterion(id="privacy_readiness", label="Pilot follows approved data-minimization expectations", target="privacy notice reviewed before launch", evidence_source="launch checklist"),
         ],
     )
 

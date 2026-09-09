@@ -167,6 +167,18 @@ class PilotLaunchChecklist(BaseModel):
     items: list[PilotChecklistItem]
 
 
+class PilotSuccessCriterion(BaseModel):
+    id: str
+    label: str
+    target: str
+    evidence_source: str
+
+
+class PilotSuccessCriteria(BaseModel):
+    title: str
+    criteria: list[PilotSuccessCriterion]
+
+
 # ── Agent action (Claude) ─────────────────────────────────────────────────────
 
 class AgentActionRequest(BaseModel):

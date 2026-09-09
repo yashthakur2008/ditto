@@ -6,6 +6,16 @@ from app.main import app
 client = TestClient(app)
 
 
+def test_pilot_success_criteria_are_measurable():
+    res = client.get("/pilot/success-criteria")
+    assert res.status_code == 200
+    data = res.json()
+    ids = {criterion["id"] for criterion in data["criteria"]}
+    assert {"transform_success_rate", "accessibility_delta", "student_preference", "latency", "privacy_readiness"}.issubset(ids)
+    assert all(criterion["target"] for criterion in data["criteria"])
+    assert all(criterion["evidence_source"] for criterion in data["criteria"])
+
+
 def test_pilot_launch_checklist_covers_privacy_urls_and_feedback():
     res = client.get("/pilot/launch-checklist")
     assert res.status_code == 200

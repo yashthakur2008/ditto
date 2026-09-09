@@ -99,6 +99,7 @@ page rebuild itself uses the full `OPENAI_MODEL`.
 | GET | `/history/{uid}/report` | Downloadable CSV audit trail of before/after scores |
 | GET | `/pilot/privacy-notice` | Plain-language school pilot privacy and consent copy |
 | GET | `/pilot/launch-checklist` | Coordinator checklist for launching a school pilot safely |
+| GET | `/pilot/success-criteria` | Measurable outcome targets for school pilot evaluation |
 | POST | `/pilot/reading-list` | Validate a school pilot reading list without scraping/LLM spend |
 | GET | `/pilot/reading-list/{id}` | Fetch an in-memory pilot reading-list scaffold |
 | GET | `/pilot/reading-list/{id}/summary` | Get readiness rate, ready/blocked domains, duplicate count, and next step |
