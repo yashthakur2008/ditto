@@ -21,6 +21,7 @@ from app.models.schemas import (
     PilotReadingListRequest,
     PilotReadingListResponse,
     PilotReadinessSummary,
+    PilotPrivacyNotice,
     TransformProfile,
 )
 from app.config import settings
@@ -242,6 +243,34 @@ async def get_profile(uid: str) -> dict:
 
 
 # ── /pilot/reading-list ───────────────────────────────────────────────────────
+
+
+@router.get("/pilot/privacy-notice", response_model=PilotPrivacyNotice)
+async def get_pilot_privacy_notice() -> PilotPrivacyNotice:
+    """Plain-language privacy copy for school pilot coordinators and students."""
+    return PilotPrivacyNotice(
+        title="Ditto school pilot privacy notice",
+        summary=(
+            "Ditto uses approved reading URLs and optional accessibility preferences "
+            "to create easier-to-read versions of school content. Pilot reports are "
+            "designed to measure readiness and accessibility outcomes, not to monitor students."
+        ),
+        data_collected=[
+            "approved reading URL",
+            "selected accessibility profile categories",
+            "transform status and timestamps",
+            "before/after accessibility score totals when a transform runs",
+        ],
+        data_not_collected=[
+            "passwords or private course logins",
+            "medical documentation",
+            "full browsing history",
+            "payment information during pilots",
+        ],
+        retention_note="Pilot scaffold data is in-memory in local/demo mode until school-approved persistence is configured.",
+        consent_note="Students and coordinators should review this notice before a pilot and use only approved course readings.",
+    )
+
 
 def _pilot_id(name: str, urls: list[str]) -> str:
     payload = "\n".join([name.strip(), *[u.strip() for u in urls]])

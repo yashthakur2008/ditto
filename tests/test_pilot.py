@@ -6,6 +6,19 @@ from app.main import app
 client = TestClient(app)
 
 
+def test_pilot_privacy_notice_is_plain_language_and_minimizes_data():
+    res = client.get("/pilot/privacy-notice")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["audience"] == "both"
+    assert "privacy notice" in data["title"].lower()
+    assert "not to monitor students" in data["summary"]
+    assert "approved reading URL" in data["data_collected"]
+    assert "full browsing history" in data["data_not_collected"]
+    assert "in-memory" in data["retention_note"]
+    assert "review this notice" in data["consent_note"]
+
+
 def test_pilot_reading_list_validates_and_stores_public_urls():
     res = client.post(
         "/pilot/reading-list",

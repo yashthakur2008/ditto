@@ -145,6 +145,16 @@ class PilotReadinessSummary(BaseModel):
     recommended_next_step: str
 
 
+class PilotPrivacyNotice(BaseModel):
+    title: str
+    audience: Literal["student", "coordinator", "both"] = "both"
+    summary: str
+    data_collected: list[str] = Field(default_factory=list)
+    data_not_collected: list[str] = Field(default_factory=list)
+    retention_note: str
+    consent_note: str
+
+
 # ── Agent action (Claude) ─────────────────────────────────────────────────────
 
 class AgentActionRequest(BaseModel):
