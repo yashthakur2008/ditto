@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Any, Literal
 
 
@@ -99,6 +99,36 @@ class BatchTransformResult(BaseModel):
 
 class BatchTransformResponse(BaseModel):
     results: list[BatchTransformResult]
+
+
+# ── School pilot scaffold ─────────────────────────────────────────────────────
+
+class PilotReadingListRequest(BaseModel):
+    name: str
+    urls: list[str]
+    profile_categories: list[str] = Field(default_factory=list)
+    reviewer: str = ""
+
+
+class PilotReadingItem(BaseModel):
+    url: str
+    status: Literal["ready", "blocked"]
+    error: str | None = None
+    approved_domain: str | None = None
+    profile_categories: list[str] = Field(default_factory=list)
+    before_score_total: float | None = None
+    after_score_total: float | None = None
+
+
+class PilotReadingListResponse(BaseModel):
+    pilot_id: str
+    name: str
+    reviewer: str = ""
+    total_urls: int
+    ready_count: int
+    blocked_count: int
+    school_mode: bool
+    items: list[PilotReadingItem]
 
 
 # ── Agent action (Claude) ─────────────────────────────────────────────────────

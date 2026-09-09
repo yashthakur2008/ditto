@@ -1,6 +1,8 @@
 import asyncio
+import hashlib
 import time
 import traceback
+from urllib.parse import urlparse
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -12,8 +14,12 @@ from app.models.schemas import (
     BatchTransformRequest,
     BatchTransformResponse,
     BatchTransformResult,
+    PilotReadingItem,
+    PilotReadingListRequest,
+    PilotReadingListResponse,
     TransformProfile,
 )
+from app.config import settings
 from app.services import transform_service, compliance_service, firebase_service
 from app.services.url_validation import URLValidationError, validate_fetch_url
 
@@ -21,6 +27,8 @@ router = APIRouter(tags=["transform"])
 
 MAX_BATCH_URLS = 10
 BATCH_CONCURRENCY = 3
+MAX_PILOT_URLS = 50
+_pilot_reading_lists: dict[str, PilotReadingListResponse] = {}
 
 
 async def _log_transform(
@@ -227,6 +235,76 @@ async def get_profile(uid: str) -> dict:
     except Exception:
         raise HTTPException(status_code=503, detail="Couldn't load your profile right now — try again shortly.")
     return doc or {}
+
+
+# ── /pilot/reading-list ───────────────────────────────────────────────────────
+
+def _pilot_id(name: str, urls: list[str]) -> str:
+    payload = "\n".join([name.strip(), *[u.strip() for u in urls]])
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:12]
+
+
+@router.post("/pilot/reading-list", response_model=PilotReadingListResponse)
+async def create_pilot_reading_list(req: PilotReadingListRequest) -> PilotReadingListResponse:
+    """
+    Validate a school pilot reading list without transforming pages yet.
+
+    This is a startup-readiness scaffold: coordinators can prove a reading
+    list is safe/approved before spending scrape or LLM budget. It intentionally
+    stores only in-process metadata for now; auth, persistence, and reviewer
+    workflows belong in the next pilot milestone.
+    """
+    name = req.name.strip() or "Untitled reading list"
+    urls = [u.strip() for u in req.urls if u.strip()]
+    if not urls:
+        raise HTTPException(status_code=400, detail="Provide at least one reading URL.")
+    if len(urls) > MAX_PILOT_URLS:
+        raise HTTPException(status_code=400, detail=f"Pilot reading lists are limited to {MAX_PILOT_URLS} URLs.")
+
+    categories = [c.strip() for c in req.profile_categories if c.strip()]
+    items: list[PilotReadingItem] = []
+    for url in urls:
+        try:
+            safe_url = validate_fetch_url(url)
+            host = (urlparse(safe_url).hostname or "").lower()
+            items.append(
+                PilotReadingItem(
+                    url=safe_url,
+                    status="ready",
+                    approved_domain=host,
+                    profile_categories=categories,
+                )
+            )
+        except URLValidationError as e:
+            items.append(
+                PilotReadingItem(
+                    url=url,
+                    status="blocked",
+                    error=str(e),
+                    profile_categories=categories,
+                )
+            )
+
+    response = PilotReadingListResponse(
+        pilot_id=_pilot_id(name, urls),
+        name=name,
+        reviewer=req.reviewer.strip(),
+        total_urls=len(items),
+        ready_count=sum(1 for item in items if item.status == "ready"),
+        blocked_count=sum(1 for item in items if item.status == "blocked"),
+        school_mode=settings.school_mode,
+        items=items,
+    )
+    _pilot_reading_lists[response.pilot_id] = response
+    return response
+
+
+@router.get("/pilot/reading-list/{pilot_id}", response_model=PilotReadingListResponse)
+async def get_pilot_reading_list(pilot_id: str) -> PilotReadingListResponse:
+    record = _pilot_reading_lists.get(pilot_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Pilot reading list not found.")
+    return record
 
 
 # ── /history ──────────────────────────────────────────────────────────────────

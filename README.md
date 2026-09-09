@@ -97,6 +97,8 @@ page rebuild itself uses the full `OPENAI_MODEL`.
 | GET | `/get-profile/{uid}` | Load profile from Firestore |
 | GET | `/history/{uid}` | Recent transforms for a user (opt-in — see Privacy) |
 | GET | `/history/{uid}/report` | Downloadable CSV audit trail of before/after scores |
+| POST | `/pilot/reading-list` | Validate a school pilot reading list without scraping/LLM spend |
+| GET | `/pilot/reading-list/{id}` | Fetch an in-memory pilot reading-list scaffold |
 | POST | `/share` | Persist a rebuilt page, returns a short id for `/r/{id}` |
 | GET | `/share/{id}` | Fetch a previously shared rebuilt page |
 
