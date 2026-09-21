@@ -18,6 +18,16 @@ NEXT_PUBLIC_BACKEND_URL=https://your-backend-api.example.com
 
 Do not use a trailing slash. The frontend defaults to `http://localhost:8080` when this variable is missing, which is only correct for local development.
 
+## Preflight check
+
+Before deploying, run the repeatable preflight from the repository root:
+
+```bash
+./scripts/vercel-preflight.sh
+```
+
+It checks Vercel config/docs, then runs the frontend typecheck and production build.
+
 ## CLI deploy
 
 From this repository root, you can deploy the frontend directly:
