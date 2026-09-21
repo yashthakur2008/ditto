@@ -35,6 +35,16 @@ def test_vercel_preflight_script_checks_docs_and_frontend_config():
     assert "Vercel preflight passed" in result.stdout
 
 
+def test_frontend_vercel_config_is_tracked_for_ci():
+    result = subprocess.run(
+        ["git", "ls-files", "frontend/vercel.json"],
+        check=True,
+        text=True,
+        capture_output=True,
+    )
+    assert result.stdout.strip() == "frontend/vercel.json"
+
+
 def test_ci_runs_vercel_preflight():
     workflow = Path(".github/workflows/vercel-preflight.yml")
     assert workflow.exists(), "CI should run Vercel preflight before deployment changes merge"
