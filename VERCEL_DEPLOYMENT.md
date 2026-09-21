@@ -20,7 +20,14 @@ Do not use a trailing slash. The frontend defaults to `http://localhost:8080` wh
 
 ## CLI deploy
 
-From this repository:
+From this repository root, you can deploy the frontend directly:
+
+```bash
+npx vercel login
+npx vercel --cwd frontend --prod
+```
+
+Or run the same deploy from inside the frontend directory:
 
 ```bash
 cd frontend
