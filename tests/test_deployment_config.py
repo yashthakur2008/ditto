@@ -33,3 +33,11 @@ def test_vercel_preflight_script_checks_docs_and_frontend_config():
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert "Vercel preflight passed" in result.stdout
+
+
+def test_ci_runs_vercel_preflight():
+    workflow = Path(".github/workflows/vercel-preflight.yml")
+    assert workflow.exists(), "CI should run Vercel preflight before deployment changes merge"
+    text = workflow.read_text()
+    assert "./scripts/vercel-preflight.sh" in text
+    assert "frontend/package-lock.json" in text
