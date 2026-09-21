@@ -19,7 +19,7 @@ For portfolio assets, see [`PORTFOLIO_CASE_STUDY.md`](PORTFOLIO_CASE_STUDY.md), 
 
 ## Live demo
 
-Deploy with **[Render](https://render.com)** (recommended) or Cloud Run / Vercel — see [Deploy](#deploy) below.
+Deploy with **[Render](https://render.com)** (recommended full-stack Blueprint) or host the frontend on **Vercel** with a separate backend — see [Deploy](#deploy) below and [`VERCEL_DEPLOYMENT.md`](VERCEL_DEPLOYMENT.md).
 
 | | URL |
 |---|---|
