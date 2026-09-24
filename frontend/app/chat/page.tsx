@@ -48,6 +48,16 @@ function extractUrl(text: string): string | null {
   return null;
 }
 
+function chatFallbackReply(text: string): string {
+  const trimmed = text.trim();
+  return (
+    "I can still help once the backend is connected. " +
+    (trimmed
+      ? `For now, I heard: “${trimmed}”. Paste a full web link when the API is ready and I’ll rebuild it around your needs.`
+      : "Paste a full web link when the API is ready and I’ll rebuild it around your needs.")
+  );
+}
+
 function ChatContent() {
   const router = useRouter();
   const { state, patch } = useFlow();
@@ -123,6 +133,13 @@ function ChatContent() {
           messages: [
             ...messagesWithUser,
             { id: makeId(), role: "assistant", text: reply },
+          ],
+        });
+      } catch {
+        patch({
+          messages: [
+            ...messagesWithUser,
+            { id: makeId(), role: "assistant", text: chatFallbackReply(text) },
           ],
         });
       } finally {
@@ -321,11 +338,11 @@ function ChatContent() {
         {state.messages.map((msg) => (
           <Bubble key={msg.id} message={msg} onOpen={openImproved} canOpen={canOpen} />
         ))}
-        {busy ? <ThinkingBubble label="Ditto is working…" /> : null}
+        {busy ? <ThinkingBubble label="Ditto is typing…" /> : null}
       </ol>
 
       <div aria-live="polite" aria-atomic="true" className="sr-only" role="status">
-        {busy ? "Ditto is reading and rebuilding the page." : ""}
+        {busy ? "Ditto is typing a response." : ""}
       </div>
 
       <form
