@@ -23,8 +23,8 @@ Deploy with **[Render](https://render.com)** (recommended full-stack Blueprint) 
 
 | | URL |
 |---|---|
-| **Frontend** | `https://ditto-web.onrender.com` (after Blueprint deploy) |
-| **Backend API** | `https://ditto-api.onrender.com` — docs at `/docs` |
+| **Frontend** | `https://frontend-tau-two-34.vercel.app` (Vercel frontend, verified public) or `https://ditto-web.onrender.com` (after Blueprint deploy) |
+| **Backend API** | Not currently verified live. Render/Cloud Run backend deploy required before setting `NEXT_PUBLIC_BACKEND_URL`. |
 
 ## Quick start (local)
 

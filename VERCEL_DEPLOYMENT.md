@@ -1,5 +1,11 @@
 # Vercel Deployment
 
+Current frontend deployment:
+
+- Public app URL: `https://frontend-tau-two-34.vercel.app`
+- SSO-protected alias observed: `https://frontend-yasht.vercel.app`
+- Backend API env is not configured yet because no valid deployed backend URL has been confirmed.
+
 This repo's Vercel target is the Next.js frontend in `frontend/`.
 
 ## Prerequisites
