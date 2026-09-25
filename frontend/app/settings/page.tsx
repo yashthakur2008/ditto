@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Container } from "@/components/layout/Container";
 import { Field } from "@/components/form/Field";
 import { TextInput } from "@/components/form/TextInput";
@@ -20,6 +20,7 @@ import {
   type HearingNeed,
   type Preferences,
   type ReadingComplexity,
+  type ThemeMode,
   type VisionNeed,
 } from "@/lib/types";
 
@@ -84,9 +85,44 @@ const dyslexiaOptions: { value: DyslexiaSupport; label: string; description: str
   },
 ];
 
+const API_KEYS_STORAGE_KEY = "ditto.api-keys.v1";
+
+type ApiKeys = {
+  openai: string;
+  claude: string;
+  elevenlabs: string;
+};
+
+const emptyApiKeys: ApiKeys = { openai: "", claude: "", elevenlabs: "" };
+
+const themeOptions: { value: ThemeMode; label: string; description: string }[] = [
+  { value: "light", label: "Light", description: "Use Ditto's warm light palette." },
+  { value: "dark", label: "Dark", description: "Use a softer dark palette for low-light reading." },
+  { value: "auto", label: "Auto", description: "Match this device's appearance setting." },
+];
+
+function loadApiKeys(): ApiKeys {
+  if (typeof window === "undefined") return emptyApiKeys;
+  try {
+    return { ...emptyApiKeys, ...JSON.parse(window.localStorage.getItem(API_KEYS_STORAGE_KEY) ?? "{}") };
+  } catch {
+    return emptyApiKeys;
+  }
+}
+
+function saveApiKeys(keys: ApiKeys) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(API_KEYS_STORAGE_KEY, JSON.stringify(keys));
+}
+
 export default function SettingsPage() {
   const router = useRouter();
   const { state, hydrated, set } = useFlow();
+  const [apiKeys, setApiKeys] = useState<ApiKeys>(emptyApiKeys);
+
+  useEffect(() => {
+    setApiKeys(loadApiKeys());
+  }, []);
 
   // Settings requires both authed + completed initial survey.
   useEffect(() => {
@@ -116,6 +152,12 @@ export default function SettingsPage() {
     return arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value];
   }
 
+  function updateApiKey(key: keyof ApiKeys, value: string) {
+    const next = { ...apiKeys, [key]: value };
+    setApiKeys(next);
+    saveApiKeys(next);
+  }
+
   return (
     <Container size="md">
       <header className="mt-10 flex flex-col gap-3">
@@ -132,6 +174,45 @@ export default function SettingsPage() {
       </header>
 
       <div className="mt-12 flex flex-col gap-12">
+        <section className="motion-card flex flex-col gap-5">
+          <h2 className="font-[family-name:var(--font-display)] text-[var(--color-ink)] text-xl font-semibold">
+            Appearance
+          </h2>
+          <RadioGroup<ThemeMode>
+            legend="Theme"
+            description="Choose Light, Dark, or Auto to follow this device."
+            value={prefs.themeMode}
+            options={themeOptions}
+            onChange={(v) => update({ themeMode: v })}
+          />
+        </section>
+
+        <section className="motion-card flex flex-col gap-5">
+          <div>
+            <h2 className="font-[family-name:var(--font-display)] text-[var(--color-ink)] text-xl font-semibold">
+              API keys
+            </h2>
+            <p className="mt-2 text-[var(--color-ink-muted)] text-sm leading-relaxed">
+              Saved only on this device in your browser. Use these for local testing and demos, not shared computers.
+            </p>
+          </div>
+          <Field label="OpenAI API key" description="Optional. Stored locally as ditto.api-keys.v1.">
+            {(ids) => (
+              <TextInput id={ids.inputId} type="password" value={apiKeys.openai} onChange={(e) => updateApiKey("openai", e.target.value)} aria-describedby={ids["aria-describedby"]} />
+            )}
+          </Field>
+          <Field label="Claude API key" description="Optional. Stored locally as ditto.api-keys.v1.">
+            {(ids) => (
+              <TextInput id={ids.inputId} type="password" value={apiKeys.claude} onChange={(e) => updateApiKey("claude", e.target.value)} aria-describedby={ids["aria-describedby"]} />
+            )}
+          </Field>
+          <Field label="ElevenLabs API key" description="Optional. Stored locally as ditto.api-keys.v1.">
+            {(ids) => (
+              <TextInput id={ids.inputId} type="password" value={apiKeys.elevenlabs} onChange={(e) => updateApiKey("elevenlabs", e.target.value)} aria-describedby={ids["aria-describedby"]} />
+            )}
+          </Field>
+        </section>
+
         <section
           aria-labelledby="about-you"
           className="flex flex-col gap-5"

@@ -23,6 +23,7 @@ import {
   type HearingNeed,
   type Preferences,
   type ReadingComplexity,
+  type ThemeMode,
   type VisionNeed,
 } from "@/lib/types";
 
@@ -92,12 +93,19 @@ const dyslexiaOptions: { value: DyslexiaSupport; label: string; description: str
   },
 ];
 
-type SubStep = 0 | 1 | 2;
+type SubStep = 0 | 1 | 2 | 3;
+
+const themeOptions: { value: ThemeMode; label: string; description: string }[] = [
+  { value: "light", label: "Light", description: "Warm light mode." },
+  { value: "dark", label: "Dark", description: "Low-light dark mode." },
+  { value: "auto", label: "Auto", description: "Match this device automatically." },
+];
 
 const subSteps: { id: SubStep; label: string }[] = [
   { id: 0, label: "About you" },
   { id: 1, label: "Your senses" },
-  { id: 2, label: "How you read" },
+  { id: 2, label: "Appearance" },
+  { id: 3, label: "How you read" },
 ];
 
 export default function PreferencesPage() {
@@ -158,7 +166,7 @@ function PreferencesContent() {
 
   function next() {
     if (step === 0 && !validateAboutYou()) return;
-    if (step < 2) setStep((s) => ((s + 1) as SubStep));
+    if (step < 3) setStep((s) => ((s + 1) as SubStep));
     else finish();
   }
 
@@ -208,7 +216,9 @@ function PreferencesContent() {
 
         {step === 1 ? <Senses prefs={prefs} setPrefs={setPrefs} toggle={toggle} /> : null}
 
-        {step === 2 ? (
+        {step === 2 ? <Appearance prefs={prefs} setPrefs={setPrefs} /> : null}
+
+        {step === 3 ? (
           <Reading prefs={prefs} setPrefs={setPrefs} />
         ) : null}
 
@@ -223,7 +233,7 @@ function PreferencesContent() {
             </button>
           ) : null}
           <button type="submit" className="btn-primary ml-auto">
-            {step < 2 ? "Continue" : "Save and start chatting"}
+            {step < 3 ? "Continue" : "Save and start chatting"}
           </button>
         </div>
       </form>
@@ -429,6 +439,34 @@ function Senses({
           />
         ))}
       </CheckboxGroup>
+    </section>
+  );
+}
+
+function Appearance({
+  prefs,
+  setPrefs,
+}: {
+  prefs: Preferences;
+  setPrefs: (p: Preferences) => void;
+}) {
+  return (
+    <section className="motion-card flex flex-col gap-6">
+      <header className="flex flex-col gap-2">
+        <h2 className="font-[family-name:var(--font-display)] text-[var(--color-ink)] text-xl font-semibold">
+          Appearance
+        </h2>
+        <p className="text-[var(--color-ink-muted)] text-sm leading-relaxed">
+          Pick Light, Dark, or Auto. Auto follows this device so Ditto feels natural the first time you return.
+        </p>
+      </header>
+      <RadioGroup<ThemeMode>
+        legend="Theme"
+        description="You can change this later in settings."
+        value={prefs.themeMode}
+        options={themeOptions}
+        onChange={(v) => setPrefs({ ...prefs, themeMode: v })}
+      />
     </section>
   );
 }

@@ -1,8 +1,16 @@
-import type { Preferences } from "./types";
+import type { Preferences, ThemeMode } from "./types";
 
 const MIN_SCALE = 1.0;
 const MAX_SCALE = 1.5;
 const DEFAULT_SCALE_ON_TOGGLE = 1.2;
+
+function resolveThemeMode(mode: ThemeMode | undefined): "light" | "dark" {
+  if (mode === "dark" || mode === "light") return mode;
+  if (typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches) {
+    return "dark";
+  }
+  return "light";
+}
 
 /**
  * Compute the effective root font-size multiplier from preferences.
@@ -35,6 +43,7 @@ export function applyPreferencesToDocument(prefs: Preferences | null): void {
     if (value) html.setAttribute(attr, value);
     else html.removeAttribute(attr);
   };
+  set("data-theme", resolveThemeMode(prefs?.themeMode));
   set("data-contrast", vision.includes("high-contrast") ? "high" : null);
   set("data-motion", vision.includes("reduced-motion") ? "reduced" : null);
   set(

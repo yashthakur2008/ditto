@@ -126,6 +126,28 @@ html {
   scroll-behavior: auto !important;
 }
 
+/* Dark appearance mode */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --color-paper: #171513;
+  --color-paper-soft: #211e1a;
+  --color-paper-deep: #2b261f;
+  --color-ink: #f6efe5;
+  --color-ink-soft: #e4d8ca;
+  --color-ink-muted: #c0b2a3;
+  --color-ink-faint: #948678;
+  --color-accent: #91b4ea;
+  --color-accent-soft: #1f344f;
+  --color-accent-strong: #c5dcff;
+  --color-grow: #9cc89f;
+  --color-grow-soft: #233425;
+  --color-warm: #e4b17f;
+  --color-warm-soft: #3c2b1d;
+  --color-alert: #ee9a9a;
+  --color-alert-soft: #3a2020;
+  --color-rule: #4a4035;
+}
+
 /* ========================================================================
    BASE STYLES
    ======================================================================== */
@@ -293,4 +315,27 @@ html {
   [data-contrast="high"] .field-input {
     border-width: 2px;
   }
+}
+
+@keyframes ditto-fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ditto-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.03); }
+}
+
+.motion-card {
+  animation: ditto-fade-up 360ms var(--ease-soft) both;
+}
+
+.motion-card:hover {
+  transform: translateY(-1px);
+  transition: transform 180ms var(--ease-soft), box-shadow 180ms var(--ease-soft);
+}
+
+.typing-pulse {
+  animation: ditto-pulse 1.2s var(--ease-soft) infinite;
 }

@@ -435,7 +435,7 @@ function Bubble({
   if (isUser) {
     return (
       <li className="flex w-full justify-end">
-        <div className="flex max-w-[42rem] flex-col gap-3 rounded-[var(--radius-lg)] rounded-br-sm bg-[var(--color-accent-soft)] px-5 py-4 text-[var(--color-ink)]">
+        <div className="motion-card flex max-w-[42rem] flex-col gap-3 rounded-[var(--radius-lg)] rounded-br-sm bg-[var(--color-accent-soft)] px-5 py-4 text-[var(--color-ink)]">
           <p className="sr-only">You said:</p>
           <div className="whitespace-pre-wrap leading-relaxed">
             {message.text}
@@ -452,7 +452,7 @@ function Bubble({
       >
         <DittoMark size={32} />
       </div>
-      <div className="flex max-w-[42rem] flex-col gap-3 rounded-[var(--radius-lg)] rounded-tl-sm border border-[var(--color-rule)] bg-white px-5 py-4 text-[var(--color-ink)]">
+      <div className="motion-card flex max-w-[42rem] flex-col gap-3 rounded-[var(--radius-lg)] rounded-tl-sm border border-[var(--color-rule)] bg-white px-5 py-4 text-[var(--color-ink)]">
         <p className="sr-only">Ditto said:</p>
         <div className="whitespace-pre-wrap leading-relaxed">{message.text}</div>
         {message.offerRebuild && canOpen ? (
@@ -477,7 +477,7 @@ function ThinkingBubble({ label }: { label: string }) {
       <div className="mt-1 shrink-0 text-[var(--color-ink-faint)]">
         <DittoMark size={32} />
       </div>
-      <div className="flex items-center gap-2 rounded-[var(--radius-lg)] rounded-tl-sm border border-[var(--color-rule)] bg-white px-5 py-3 text-[var(--color-ink-muted)] italic">
+      <div className="typing-pulse flex items-center gap-2 rounded-[var(--radius-lg)] rounded-tl-sm border border-[var(--color-rule)] bg-white px-5 py-3 text-[var(--color-ink-muted)] italic">
         <span className="inline-flex gap-1">
           <Dot delay={0} />
           <Dot delay={150} />

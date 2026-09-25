@@ -13,6 +13,9 @@ const script = `
     var p = flow && flow.preferences;
     if (!p) return;
     var html = document.documentElement;
+    var themeMode = p.themeMode || "auto";
+    var theme = themeMode === "dark" || (themeMode === "auto" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+    html.setAttribute("data-theme", theme);
     var vision = Array.isArray(p.vision) ? p.vision : [];
     if (vision.indexOf("high-contrast") > -1) html.setAttribute("data-contrast", "high");
     if (vision.indexOf("reduced-motion") > -1) html.setAttribute("data-motion", "reduced");

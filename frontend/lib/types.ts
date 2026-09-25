@@ -1,5 +1,7 @@
 export type Step = "welcome" | "preferences" | "chat" | "output";
 
+export type ThemeMode = "light" | "dark" | "auto";
+
 export type ChatMessage = {
   id: string;
   role: "user" | "assistant";
@@ -38,6 +40,7 @@ export type Preferences = {
   textScale: number;
   /** Opt-in: save recent transformed URLs server-side so they can be revisited. */
   historyEnabled: boolean;
+  themeMode: ThemeMode;
 };
 
 export type HistoryItem = {
@@ -102,6 +105,7 @@ export const defaultPreferences: Preferences = {
   simplifyLanguage: false,
   textScale: 1.2,
   historyEnabled: false,
+  themeMode: "auto",
 };
 
 export const initialFlow: FlowState = {
