@@ -47,7 +47,7 @@ def test_theme_mode_applies_before_and_after_hydration():
 
 def test_first_time_preferences_page_is_onboarding_with_appearance_step():
     source = PREFERENCES_PAGE.read_text()
-    assert "first time" in source.lower() or "first-time" in source.lower()
+    assert "first time on this device" in source.lower()
     assert "Appearance" in source
     assert "themeMode" in source
     assert "Light" in source and "Dark" in source and "Auto" in source

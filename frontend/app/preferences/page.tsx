@@ -190,7 +190,8 @@ function PreferencesContent() {
         How do you like to read?
       </h1>
       <p className="prose-measure mt-4 text-[var(--color-ink-soft)] text-lg leading-relaxed">
-        A few quick questions so Ditto can shape every page around you. Saved
+        Welcome. Let&rsquo;s set Ditto up for the first time on this device. A
+        few quick questions so Ditto can shape every page around you. Saved
         locally in your browser — only the link you paste is sent to Ditto when
         you rebuild a page.
       </p>
