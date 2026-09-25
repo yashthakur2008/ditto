@@ -7,7 +7,7 @@ import type { Step } from "@/lib/types";
 
 function earliestUnmet(state: ReturnType<typeof useFlow>["state"]): Step {
   if (!state.authed) return "welcome";
-  if (!state.preferences) return "preferences";
+  if (!state.preferences || !state.onboardingComplete) return "preferences";
   if (!state.rebuilt) return "chat";
   return "output";
 }

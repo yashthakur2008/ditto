@@ -118,7 +118,7 @@ export default function PreferencesPage() {
 
 function PreferencesContent() {
   const router = useRouter();
-  const { state, set } = useFlow();
+  const { state, patch } = useFlow();
   const [prefs, setPrefs] = useState<Preferences>(() => ({
     ...defaultPreferences,
     ...(state.preferences ?? {}),
@@ -175,10 +175,13 @@ function PreferencesContent() {
   }
 
   function finish() {
-    set("preferences", {
-      ...prefs,
-      name: prefs.name.trim(),
-      country: prefs.country.trim(),
+    patch({
+      preferences: {
+        ...prefs,
+        name: prefs.name.trim(),
+        country: prefs.country.trim(),
+      },
+      onboardingComplete: true,
     });
     router.push("/chat");
   }

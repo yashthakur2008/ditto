@@ -84,6 +84,8 @@ export type Rebuilt = {
 export type FlowState = {
   authed: boolean;
   preferences: Preferences | null;
+  /** True only after the user finishes the first-time preferences walkthrough on this device. */
+  onboardingComplete: boolean;
   source: { mode: "url" | "capture"; url?: string } | null;
   /** Legacy mock field, kept on state for now so existing localStorage stays compatible. */
   analysis: unknown | null;
@@ -111,6 +113,7 @@ export const defaultPreferences: Preferences = {
 export const initialFlow: FlowState = {
   authed: false,
   preferences: null,
+  onboardingComplete: false,
   source: null,
   analysis: null,
   intent: "",

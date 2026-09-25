@@ -13,7 +13,7 @@ export default function WelcomePage() {
   const { state, patch } = useFlow();
 
   function destinationAfterAuth(): string {
-    return state.preferences ? "/chat" : "/preferences";
+    return state.onboardingComplete && state.preferences ? "/chat" : "/preferences";
   }
 
   function continueAsGuest(e: React.FormEvent) {
