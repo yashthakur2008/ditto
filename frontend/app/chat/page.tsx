@@ -48,6 +48,16 @@ function extractUrl(text: string): string | null {
   return null;
 }
 
+/**
+ * Keeps the "Ditto is typing…" state on screen long enough to be perceivable,
+ * even when a reply resolves instantly (for example the offline fallback).
+ */
+const MIN_TYPING_MS = 450;
+
+function withMinimumTypingTime(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, MIN_TYPING_MS));
+}
+
 function chatFallbackReply(text: string): string {
   const trimmed = text.trim();
   return (
@@ -118,6 +128,7 @@ function ChatContent() {
 
     if (!url) {
       setBusy(true);
+      const typingFloor = withMinimumTypingTime();
       abortRef.current?.abort();
       abortRef.current = new AbortController();
       const messagesWithUser = [...state.messages, userMsg];
@@ -136,6 +147,7 @@ function ChatContent() {
           ],
         });
       } catch {
+        await typingFloor;
         patch({
           messages: [
             ...messagesWithUser,

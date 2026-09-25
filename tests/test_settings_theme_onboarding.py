@@ -79,3 +79,9 @@ def test_onboarding_completion_is_tracked_separately_from_typed_name():
     assert "onboardingComplete" in guard_source
     assert "state.onboardingComplete" in welcome_source
     assert "onboardingComplete" in prefs_source
+
+
+def test_typing_indicator_has_minimum_visible_duration():
+    source = CHAT_PAGE.read_text()
+    assert "MIN_TYPING_MS" in source
+    assert "withMinimumTypingTime" in source
