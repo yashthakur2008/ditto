@@ -85,3 +85,9 @@ def test_typing_indicator_has_minimum_visible_duration():
     source = CHAT_PAGE.read_text()
     assert "MIN_TYPING_MS" in source
     assert "withMinimumTypingTime" in source
+
+
+def test_dark_theme_overrides_hardcoded_white_surfaces():
+    css = GLOBALS.read_text()
+    assert '[data-theme="dark"] .bg-white' in css
+    assert '[data-theme="dark"] [class*="bg-white/"]' in css

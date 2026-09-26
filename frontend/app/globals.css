@@ -339,3 +339,24 @@ html {
 .typing-pulse {
   animation: ditto-pulse 1.2s var(--ease-soft) infinite;
 }
+
+/*
+ * Dark mode surface correction.
+ * Several components use Tailwind's literal `bg-white` for card surfaces.
+ * In dark mode that produces white-on-light-text (unreadable controls),
+ * so remap those literal white surfaces onto the themed surface color.
+ */
+[data-theme="dark"] .bg-white,
+[data-theme="dark"] [class*="bg-white/"],
+[data-theme="dark"] [class*="hover:bg-white"]:hover {
+  background-color: var(--color-paper-soft) !important;
+}
+
+[data-theme="dark"] .field-input {
+  background-color: var(--color-paper-soft);
+  color: var(--color-ink);
+}
+
+[data-theme="dark"] .surface {
+  background-color: var(--color-paper-soft);
+}

@@ -145,6 +145,53 @@ function check(name, ok, detail) {
   });
   check("reduced motion shortens animation", parseFloat(reducedDuration) <= 0.0001, String(reducedDuration));
 
+  // 12. Dark mode contrast: option cards must not be white-on-light-text.
+  const contrastCtx = await browser.newContext();
+  await contrastCtx.addInitScript((flow) => localStorage.setItem("ditto.flow.v1", JSON.stringify(flow)), seed("dark"));
+  const contrastPage = await contrastCtx.newPage();
+  await contrastPage.goto(`${BASE}/settings`, { waitUntil: "networkidle" });
+  await contrastPage.getByRole("heading", { name: /api keys/i }).waitFor({ timeout: 20000 });
+
+  const parseRgb = (v) => (v.match(/\d+(\.\d+)?/g) || []).slice(0, 3).map(Number);
+  const relLum = ([r, g, b]) => {
+    const f = (c) => {
+      const s = c / 255;
+      return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+    };
+    return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+  };
+  const ratio = (fg, bg) => {
+    const L1 = relLum(fg), L2 = relLum(bg);
+    const hi = Math.max(L1, L2), lo = Math.min(L1, L2);
+    return (hi + 0.05) / (lo + 0.05);
+  };
+
+  const themeLabelStyles = await contrastPage.evaluate(() => {
+    const out = [];
+    for (const label of document.querySelectorAll('label')) {
+      const text = label.innerText.trim();
+      if (!/^(Light|Dark|Auto)/.test(text)) continue;
+      const span = label.querySelector("span span") || label;
+      out.push({
+        text: text.split("\n")[0],
+        color: getComputedStyle(span).color,
+        background: getComputedStyle(label).backgroundColor,
+      });
+    }
+    return out;
+  });
+
+  check("theme options render in dark mode", themeLabelStyles.length >= 3, String(themeLabelStyles.length));
+
+  const worst = themeLabelStyles
+    .map((s) => ({ text: s.text, r: ratio(parseRgb(s.color), parseRgb(s.background)) }))
+    .sort((a, b) => a.r - b.r)[0];
+  check(
+    "dark mode theme options are readable (contrast >= 4.5)",
+    !!worst && worst.r >= 4.5,
+    worst ? `${worst.text} ${worst.r.toFixed(2)}:1` : "none",
+  );
+
   await browser.close();
 
   const failed = results.filter((r) => !r.ok);
